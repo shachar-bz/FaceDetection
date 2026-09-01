@@ -1,22 +1,28 @@
-# MediaPipe Face Detector evaluation
+# Face detector evaluation
 
-Evaluates the MediaPipe Face Detector task (BlazeFace `short_range` and
-`full_range` variants) against the 500-image sample in
-`mediapipe-face-detection-images/`, to pick a model, confidence threshold,
-and crop margin for the face-embedding pipeline.
+Evaluates face detectors — MediaPipe Face Detector (BlazeFace `short_range`
+and `full_range` variants) and SCRFD-10G-KPS — against the 500-image sample
+in `mediapipe-face-detection-images/`, to pick a model, confidence
+threshold, and crop margin for the face-embedding pipeline.
 
 ## Setup
 
 ```
 pip install -r requirements.txt
 python scripts/download_face_detector_models.py   # -> models/*.tflite
+python scripts/download_scrfd_model.py             # -> models/scrfd_10g_kps.onnx
 ```
 
 ## Scripts
 
-- `face_detection/detect.py` — runs both model variants over every image in
-  the manifest, writes per-image detection counts/scores/boxes to
+- `face_detection/detect.py` — runs both BlazeFace variants over every image
+  in the manifest, writes per-image detection counts/scores/boxes to
   `output/detections_<variant>.csv`.
+- `face_detection/detect_scrfd.py` — same contract as `detect.py`, for the
+  SCRFD-10G-KPS ONNX model; writes `detections_scrfd_10g_kps.csv`.
+- `face_detection/accuracy_report.py` — scores a detections CSV against
+  per-group ground truth (TP/TN/FP/FN, precision/recall/accuracy). Accepts
+  `--variants` to target any set of variant names.
 - `face_detection/summarize.py` — turns a detections CSV into recall /
   false-positive stats, broken down by brightness, framing, and orientation.
 - `face_detection/threshold_sweep.py` — re-thresholds a low-confidence
@@ -26,6 +32,23 @@ python scripts/download_face_detector_models.py   # -> models/*.tflite
 - `face_detection/visualize_margins.py` — for a list of images, draws the
   raw bounding box plus square crops expanded by several margin ratios, as
   a side-by-side contact sheet, to eyeball crop quality.
+
+## SCRFD-10G-KPS results
+
+Run into a separate `results_scrfd/` folder (vs. `results/` for the
+MediaPipe variants) since it's a different model with a different accuracy
+report:
+
+```
+python face_detection/detect_scrfd.py --images-root mediapipe-face-detection-images --manifest mediapipe-face-detection-images/manifest.csv --model models/scrfd_10g_kps.onnx --output-dir results_scrfd
+python face_detection/accuracy_report.py --results-dir results_scrfd --variants scrfd_10g_kps
+```
+
+At the default 0.5 confidence threshold, SCRFD-10G-KPS clearly outperforms
+both BlazeFace variants on this sample: 96.8% accuracy / 100% precision /
+95.0% recall (n=411), vs. `full_range`'s 81.0% accuracy / 99.5% precision /
+70.5% recall. It also had zero false positives on `no_person` images
+(`full_range` had 1).
 
 ## Findings (500-image sample: 166 no_person / 167 one_person / 167 multiple_people)
 

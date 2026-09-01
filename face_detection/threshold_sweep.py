@@ -38,9 +38,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--thresholds", type=float, nargs="+", default=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])
+    parser.add_argument("--variants", nargs="+", default=["short_range", "full_range"])
     args = parser.parse_args()
 
-    for variant_name in ("short_range", "full_range"):
+    for variant_name in args.variants:
         csv_path = args.output_dir / f"detections_{variant_name}.csv"
         df = pd.read_csv(csv_path)
         print(f"=== {variant_name} ===")

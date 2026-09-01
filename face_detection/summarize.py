@@ -55,9 +55,10 @@ def summarize_variant(df: pd.DataFrame) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--variants", nargs="+", default=["short_range", "full_range"])
     args = parser.parse_args()
 
-    for variant_name in ("short_range", "full_range"):
+    for variant_name in args.variants:
         csv_path = args.output_dir / f"detections_{variant_name}.csv"
         print(f"=== {variant_name} ({csv_path.name}) ===")
         summarize_variant(pd.read_csv(csv_path))
