@@ -1,0 +1,4 @@
+mediapipe==1.0.1
+opencv-contrib-python==5.0.0.93
+numpy==2.5.2
+pandas==3.0.5

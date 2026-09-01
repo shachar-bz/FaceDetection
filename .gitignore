@@ -3,3 +3,6 @@ CLAUDE.md
 AGENT.md
 mediapipe-face-detection-images
 README_HE.md
+/models
+/output
+/output_lowconf
