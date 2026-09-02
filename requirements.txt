@@ -4,3 +4,4 @@ numpy==2.5.2
 pandas==3.0.5
 onnxruntime==1.29.0
 insightface==1.0.1
+scikit-image==0.26.0
