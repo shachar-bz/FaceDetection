@@ -1,10 +1,8 @@
 /.venv
 CLAUDE.md
-AGENT.md
-mediapipe-face-detection-images
+AGENTS.md
+detecting_faces_data
 README_HE.md
 /models
-/output
-/output_lowconf
-/results
+/results_blazeface
 /results_scrfd
