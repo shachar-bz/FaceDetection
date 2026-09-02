@@ -63,10 +63,15 @@ class PersonImage:
     relative_path: Path
 
 
-def discover_person_images(people_root: Path) -> list[PersonImage]:
-    """Finds every image under people_root/<group>/<person>/*, skipping empty dirs."""
+def discover_person_images(people_root: Path, include_groups: set[str] | None = None) -> list[PersonImage]:
+    """Finds every image under people_root/<group>/<person>/*, skipping empty dirs.
+
+    If include_groups is given, only those top-level group folder names are scanned.
+    """
     images = []
     for group_dir in sorted(p for p in people_root.iterdir() if p.is_dir()):
+        if include_groups is not None and group_dir.name not in include_groups:
+            continue
         for person_dir in sorted(p for p in group_dir.iterdir() if p.is_dir()):
             for image_path in sorted(person_dir.iterdir()):
                 if image_path.suffix.lower() in IMAGE_EXTENSIONS:
@@ -196,6 +201,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--people-root", type=Path, required=True,
                          help="Directory laid out as <group>/<person>/<image files>")
+    parser.add_argument("--include-groups", nargs="+", default=None,
+                         help="Only scan these top-level group folder names (default: all)")
     parser.add_argument("--scrfd-model", type=Path, default=Path("models/scrfd_10g_kps.onnx"))
     parser.add_argument("--resnet-webface600k-model", type=Path, default=Path("models/resnet50_webface600k.onnx"))
     parser.add_argument("--sface-model", type=Path, default=Path("models/sface_2021dec.onnx"))
@@ -214,7 +221,8 @@ def main() -> None:
     resnet_session = build_resnet_webface600k_session(args.resnet_webface600k_model)
     sface_recognizer = build_sface_recognizer(args.sface_model)
 
-    person_images = discover_person_images(args.people_root)
+    include_groups = set(args.include_groups) if args.include_groups else None
+    person_images = discover_person_images(args.people_root, include_groups)
     print(f"Found {len(person_images)} images under {args.people_root}")
 
     all_rows = []
