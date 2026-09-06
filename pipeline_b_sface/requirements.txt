@@ -1,0 +1,11 @@
+# Pipeline B - OpenCV SFace recognition, TOP2 @ threshold 0.45.
+# Direct dependencies.
+opencv-contrib-python==5.0.0.93  # SFace recognizer (needs the contrib build) + image IO/annotation
+insightface==1.0.1               # SCRFD-10GF detection + the 5 keypoints SFace's alignCrop needs
+numpy==2.5.2
+pandas==3.0.5                    # database manifest CSV
+
+# Indirect: pulled in by insightface, pinned here so a resolver change can't silently
+# swap the ONNX runtime or the transform implementation underneath it.
+onnxruntime==1.29.0
+scikit-image==0.26.0

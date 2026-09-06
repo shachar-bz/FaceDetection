@@ -1,0 +1,5 @@
+# Model weights, fetched by download_models.py.
+models/
+# The user's own face database, built by build_face_database.py.
+face_database/
+__pycache__/
