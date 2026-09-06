@@ -25,7 +25,7 @@ at the bottom.
 ## Setup
 
 ```bash
-cd pipeline_b_sface
+cd pipeline_B_sface
 pip install -r requirements.txt
 python download_models.py
 ```
@@ -120,7 +120,7 @@ Everything is at the top of [face_pipeline.py](face_pipeline.py):
   0.45–0.50 is the useful range (see the sweep below). This model is much more
   threshold-sensitive than pipeline A: below 0.40 precision falls apart fast.
 - `MATCHING_STRATEGY_TOP_K` (2) — 1 = a person's single best image, 3 = their 3 closest. For
-  this model the choice does matter (0.881–0.898 F1); TOP2 is the best of them.
+  this model the choice does matter (0.886–0.903 F1); TOP2 is the best of them.
 - `MIN_DETECTION_CONFIDENCE` (0.5) — how confident the detector must be that a region is a face.
 
 ---
@@ -130,10 +130,10 @@ Everything is at the top of [face_pipeline.py](face_pipeline.py):
 ## Setup
 
 - **Reference database:** 234 people.
-- **Evaluation set:** 571 human-labelled faces — **137 known** (someone in the reference
-  database) and **434 unknown** (distractors). Reported three ways:
+- **Evaluation set:** 571 human-labelled faces — **140 known** (someone in the reference
+  database) and **431 unknown** (distractors). Reported three ways:
   - `one_person` — images with exactly one person (129 faces: 60 known / 69 unknown)
-  - `few_people` — images with several people (442 faces: 77 known / 365 unknown)
+  - `few_people` — images with several people (442 faces: 80 known / 362 unknown)
   - `pooled` — both combined; the tables below are pooled, since that is the operating point
     a deployed threshold actually sees
 - **Strategies** (scored per candidate person, not as a global k-NN):
@@ -143,6 +143,10 @@ Everything is at the top of [face_pipeline.py](face_pipeline.py):
 - **Threshold grid:** 0.15 → 0.85 in steps of 0.05.
 - **`wrong_identity`** = a known face matched to the *wrong* known person, tracked separately
   from known→unknown and unknown→known mistakes because it is a distinct failure mode.
+- **Ground-truth revision:** five labels were corrected after reviewing the errors of an earlier
+  run — four distractors that were really known people, and one name whose box holds only the
+  back of a head (relabelled `unknown`). The split moved from 137/434 to 140/431; see
+  [../results_identification/RESULTS.md](../results_identification/RESULTS.md) for the list.
 
 ## Headline
 
@@ -153,19 +157,19 @@ happens when the threshold is set well below the optimum.
 
 | Strategy | Best threshold | F1 | Precision | Recall | Accuracy | wrong_identity |
 |---|---|---|---|---|---|---|
-| TOP1 | 0.45 | 0.894 | 0.929 | 0.861 | 0.951 | 0 |
-| **TOP2 (this pipeline)** | **0.45** | **0.898** | 0.966 | 0.839 | 0.955 | 0 |
-| TOP3 | 0.40 | 0.882 | 0.895 | 0.869 | 0.944 | 0 |
-| Centroid | 0.50 | 0.892 | 0.983 | 0.818 | 0.953 | 0 |
+| TOP1 | 0.45 | 0.899 | 0.945 | 0.857 | 0.953 | 0 |
+| **TOP2 (this pipeline)** | **0.45** | **0.903** | 0.983 | 0.836 | 0.956 | 0 |
+| TOP3 | 0.40 | 0.886 | 0.910 | 0.864 | 0.946 | 0 |
+| Centroid | 0.50 | 0.898 | 1.000 | 0.814 | 0.955 | 0 |
 
 Every configuration follows the same shape across the sweep: at **low thresholds** the system
 is too permissive — nearly every known face is found (recall ≈ 0.96) but so are essentially
-all 434 unknown faces, pinning precision at the known:unknown base rate (≈0.23) and F1 near
-0.37. As the threshold rises precision climbs while recall holds — the useful range where F1
+all 431 unknown faces, pinning precision at the known:unknown base rate (≈0.24) and F1 near
+0.38. As the threshold rises precision climbs while recall holds — the useful range where F1
 peaks. Past the peak it becomes **too conservative**, rejecting real matches as `unknown`
 (recall collapses), and by 0.80–0.85 it identifies almost nobody. **SFace's curve is choppier
 than pipeline A's and stabilizes much later** — it takes until threshold 0.40 before precision
-becomes usable, versus 0.20–0.25 for ResNet, which is why its operating threshold is higher.
+becomes usable, versus 0.25–0.30 for ResNet, which is why its operating threshold is higher.
 
 ## Full threshold sweep
 
@@ -173,120 +177,117 @@ becomes usable, versus 0.20–0.25 for ResNet, which is why its operating thresh
 
 | Threshold | Accuracy | Precision | Recall | F1 | correct | known→unknown | unknown→known | wrong_identity |
 |---|---|---|---|---|---|---|---|---|
-| 0.15 | 0.229 | 0.229 | 0.956 | 0.370 | 131 | 0 | 434 | 6 |
-| 0.20 | 0.231 | 0.230 | 0.956 | 0.371 | 131 | 0 | 433 | 6 |
-| 0.25 | 0.272 | 0.239 | 0.956 | 0.383 | 131 | 0 | 410 | 6 |
-| 0.30 | 0.398 | 0.276 | 0.956 | 0.429 | 131 | 1 | 338 | 5 |
-| 0.35 | 0.608 | 0.368 | 0.927 | 0.527 | 127 | 6 | 214 | 4 |
-| 0.40 | 0.858 | 0.638 | 0.912 | 0.751 | 125 | 10 | 69 | 2 |
-| **0.45** | **0.951** | **0.929** | **0.861** | **0.894 ← best** | 118 | 19 | 9 | 0 |
-| 0.50 | 0.942 | 0.982 | 0.774 | 0.865 | 106 | 31 | 2 | 0 |
-| 0.55 | 0.923 | 0.979 | 0.693 | 0.812 | 95 | 42 | 2 | 0 |
-| 0.60 | 0.898 | 0.988 | 0.584 | 0.734 | 80 | 57 | 1 | 0 |
-| 0.65 | 0.872 | 1.000 | 0.467 | 0.637 | 64 | 73 | 0 | 0 |
-| 0.70 | 0.837 | 1.000 | 0.321 | 0.486 | 44 | 93 | 0 | 0 |
-| 0.75 | 0.795 | 1.000 | 0.146 | 0.255 | 20 | 117 | 0 | 0 |
-| 0.80 | 0.767 | 1.000 | 0.029 | 0.057 | 4 | 133 | 0 | 0 |
-| 0.85 | 0.760 | 0.000 | 0.000 | 0.000 | 0 | 137 | 0 | 0 |
+| 0.15 | 0.235 | 0.235 | 0.957 | 0.377 | 134 | 0 | 431 | 6 |
+| 0.20 | 0.236 | 0.235 | 0.957 | 0.378 | 134 | 0 | 430 | 6 |
+| 0.25 | 0.277 | 0.245 | 0.957 | 0.390 | 134 | 0 | 407 | 6 |
+| 0.30 | 0.403 | 0.283 | 0.957 | 0.436 | 134 | 1 | 335 | 5 |
+| 0.35 | 0.615 | 0.377 | 0.929 | 0.536 | 130 | 5 | 210 | 5 |
+| 0.40 | 0.862 | 0.648 | 0.907 | 0.756 | 127 | 10 | 66 | 3 |
+| **0.45** | **0.953** | **0.945** | **0.857** | **0.899 ← best** | 120 | 20 | 7 | 0 |
+| 0.50 | 0.944 | 1.000 | 0.771 | 0.871 | 108 | 32 | 0 | 0 |
+| 0.55 | 0.925 | 1.000 | 0.693 | 0.819 | 97 | 43 | 0 | 0 |
+| 0.60 | 0.897 | 1.000 | 0.579 | 0.733 | 81 | 59 | 0 | 0 |
+| 0.65 | 0.867 | 1.000 | 0.457 | 0.627 | 64 | 76 | 0 | 0 |
+| 0.70 | 0.832 | 1.000 | 0.314 | 0.478 | 44 | 96 | 0 | 0 |
+| 0.75 | 0.790 | 1.000 | 0.143 | 0.250 | 20 | 120 | 0 | 0 |
+| 0.80 | 0.762 | 1.000 | 0.029 | 0.056 | 4 | 136 | 0 | 0 |
+| 0.85 | 0.755 | 0.000 | 0.000 | 0.000 | 0 | 140 | 0 | 0 |
 
 ### TOP2 (pooled) — the strategy this pipeline ships
 
 | Threshold | Accuracy | Precision | Recall | F1 | correct | known→unknown | unknown→known | wrong_identity |
 |---|---|---|---|---|---|---|---|---|
-| 0.15 | 0.236 | 0.235 | 0.978 | 0.379 | 134 | 0 | 433 | 3 |
-| 0.20 | 0.245 | 0.237 | 0.978 | 0.382 | 134 | 0 | 428 | 3 |
-| 0.25 | 0.329 | 0.259 | 0.978 | 0.410 | 134 | 0 | 380 | 3 |
-| 0.30 | 0.501 | 0.319 | 0.964 | 0.479 | 132 | 3 | 280 | 2 |
-| 0.35 | 0.748 | 0.487 | 0.942 | 0.642 | 129 | 8 | 136 | 0 |
-| 0.40 | 0.926 | 0.823 | 0.883 | 0.852 | 121 | 16 | 26 | 0 |
-| **0.45** | **0.955** | **0.966** | **0.839** | **0.898 ← best (shipped)** | 115 | 22 | 4 | 0 |
-| 0.50 | 0.937 | 0.981 | 0.752 | 0.851 | 103 | 34 | 2 | 0 |
-| 0.55 | 0.916 | 0.989 | 0.657 | 0.789 | 90 | 47 | 1 | 0 |
-| 0.60 | 0.886 | 0.987 | 0.533 | 0.692 | 73 | 64 | 1 | 0 |
-| 0.65 | 0.858 | 1.000 | 0.409 | 0.580 | 56 | 81 | 0 | 0 |
-| 0.70 | 0.816 | 1.000 | 0.234 | 0.379 | 32 | 105 | 0 | 0 |
-| 0.75 | 0.778 | 1.000 | 0.073 | 0.136 | 10 | 127 | 0 | 0 |
-| 0.80 | 0.762 | 1.000 | 0.007 | 0.015 | 1 | 136 | 0 | 0 |
-| 0.85 | 0.760 | 0.000 | 0.000 | 0.000 | 0 | 137 | 0 | 0 |
+| 0.15 | 0.240 | 0.239 | 0.971 | 0.383 | 136 | 0 | 430 | 4 |
+| 0.20 | 0.249 | 0.241 | 0.971 | 0.386 | 136 | 0 | 425 | 4 |
+| 0.25 | 0.333 | 0.263 | 0.971 | 0.414 | 136 | 0 | 377 | 4 |
+| 0.30 | 0.508 | 0.326 | 0.964 | 0.487 | 135 | 2 | 276 | 3 |
+| 0.35 | 0.755 | 0.498 | 0.943 | 0.652 | 132 | 7 | 132 | 1 |
+| 0.40 | 0.928 | 0.837 | 0.879 | 0.857 | 123 | 17 | 24 | 0 |
+| **0.45** | **0.956** | **0.983** | **0.836** | **0.903 ← best (shipped)** | 117 | 23 | 2 | 0 |
+| 0.50 | 0.939 | 1.000 | 0.750 | 0.857 | 105 | 35 | 0 | 0 |
+| 0.55 | 0.914 | 1.000 | 0.650 | 0.788 | 91 | 49 | 0 | 0 |
+| 0.60 | 0.884 | 1.000 | 0.529 | 0.692 | 74 | 66 | 0 | 0 |
+| 0.65 | 0.853 | 1.000 | 0.400 | 0.571 | 56 | 84 | 0 | 0 |
+| 0.70 | 0.811 | 1.000 | 0.229 | 0.372 | 32 | 108 | 0 | 0 |
+| 0.75 | 0.772 | 1.000 | 0.071 | 0.133 | 10 | 130 | 0 | 0 |
+| 0.80 | 0.757 | 1.000 | 0.007 | 0.014 | 1 | 139 | 0 | 0 |
+| 0.85 | 0.755 | 0.000 | 0.000 | 0.000 | 0 | 140 | 0 | 0 |
 
 ### TOP3 (pooled)
 
 | Threshold | Accuracy | Precision | Recall | F1 | correct | known→unknown | unknown→known | wrong_identity |
 |---|---|---|---|---|---|---|---|---|
-| 0.15 | 0.235 | 0.232 | 0.964 | 0.374 | 132 | 0 | 432 | 5 |
-| 0.20 | 0.268 | 0.240 | 0.964 | 0.384 | 132 | 0 | 413 | 5 |
-| 0.25 | 0.373 | 0.268 | 0.956 | 0.419 | 131 | 1 | 352 | 5 |
-| 0.30 | 0.578 | 0.355 | 0.949 | 0.517 | 130 | 5 | 234 | 2 |
-| 0.35 | 0.839 | 0.607 | 0.912 | 0.729 | 125 | 11 | 80 | 1 |
-| **0.40** | **0.944** | **0.895** | **0.869** | **0.881 ← best** | 119 | 18 | 14 | 0 |
-| 0.45 | 0.946 | 0.973 | 0.796 | 0.875 | 109 | 28 | 3 | 0 |
-| 0.50 | 0.925 | 0.990 | 0.693 | 0.816 | 95 | 42 | 1 | 0 |
-| 0.55 | 0.904 | 0.988 | 0.606 | 0.751 | 83 | 54 | 1 | 0 |
-| 0.60 | 0.876 | 1.000 | 0.482 | 0.650 | 66 | 71 | 0 | 0 |
-| 0.65 | 0.844 | 1.000 | 0.350 | 0.519 | 48 | 89 | 0 | 0 |
-| 0.70 | 0.797 | 1.000 | 0.153 | 0.266 | 21 | 116 | 0 | 0 |
-| 0.75 | 0.767 | 1.000 | 0.029 | 0.057 | 4 | 133 | 0 | 0 |
-| 0.80 | 0.760 | 0.000 | 0.000 | 0.000 | 0 | 137 | 0 | 0 |
-| 0.85 | 0.760 | 0.000 | 0.000 | 0.000 | 0 | 137 | 0 | 0 |
+| 0.15 | 0.238 | 0.235 | 0.957 | 0.378 | 134 | 0 | 429 | 6 |
+| 0.20 | 0.272 | 0.244 | 0.957 | 0.388 | 134 | 0 | 410 | 6 |
+| 0.25 | 0.380 | 0.275 | 0.957 | 0.427 | 134 | 0 | 348 | 6 |
+| 0.30 | 0.585 | 0.363 | 0.950 | 0.526 | 133 | 4 | 230 | 3 |
+| 0.35 | 0.844 | 0.621 | 0.914 | 0.740 | 128 | 11 | 77 | 1 |
+| **0.40** | **0.946** | **0.910** | **0.864** | **0.886 ← best** | 121 | 19 | 12 | 0 |
+| 0.45 | 0.948 | 0.991 | 0.793 | 0.881 | 111 | 29 | 1 | 0 |
+| 0.50 | 0.923 | 1.000 | 0.686 | 0.814 | 96 | 44 | 0 | 0 |
+| 0.55 | 0.902 | 1.000 | 0.600 | 0.750 | 84 | 56 | 0 | 0 |
+| 0.60 | 0.870 | 1.000 | 0.471 | 0.641 | 66 | 74 | 0 | 0 |
+| 0.65 | 0.839 | 1.000 | 0.343 | 0.511 | 48 | 92 | 0 | 0 |
+| 0.70 | 0.792 | 1.000 | 0.150 | 0.261 | 21 | 119 | 0 | 0 |
+| 0.75 | 0.762 | 1.000 | 0.029 | 0.056 | 4 | 136 | 0 | 0 |
+| 0.80 | 0.755 | 0.000 | 0.000 | 0.000 | 0 | 140 | 0 | 0 |
+| 0.85 | 0.755 | 0.000 | 0.000 | 0.000 | 0 | 140 | 0 | 0 |
 
 ### Centroid (pooled)
 
 | Threshold | Accuracy | Precision | Recall | F1 | correct | known→unknown | unknown→known | wrong_identity |
 |---|---|---|---|---|---|---|---|---|
-| 0.15 | 0.236 | 0.234 | 0.971 | 0.377 | 133 | 0 | 432 | 4 |
-| 0.20 | 0.254 | 0.238 | 0.971 | 0.382 | 133 | 0 | 422 | 4 |
-| 0.25 | 0.338 | 0.260 | 0.971 | 0.410 | 133 | 0 | 374 | 4 |
-| 0.30 | 0.489 | 0.312 | 0.956 | 0.470 | 131 | 3 | 286 | 3 |
-| 0.35 | 0.706 | 0.444 | 0.934 | 0.602 | 128 | 8 | 159 | 1 |
-| 0.40 | 0.897 | 0.735 | 0.890 | 0.805 | 122 | 15 | 44 | 0 |
-| 0.45 | 0.949 | 0.915 | 0.869 | 0.891 | 119 | 18 | 11 | 0 |
-| **0.50** | **0.953** | **0.983** | **0.818** | **0.892 ← best** | 112 | 25 | 2 | 0 |
-| 0.55 | 0.932 | 0.990 | 0.723 | 0.835 | 99 | 38 | 1 | 0 |
-| 0.60 | 0.907 | 0.988 | 0.620 | 0.762 | 85 | 52 | 1 | 0 |
-| 0.65 | 0.884 | 1.000 | 0.518 | 0.683 | 71 | 66 | 0 | 0 |
-| 0.70 | 0.853 | 1.000 | 0.387 | 0.558 | 53 | 84 | 0 | 0 |
-| 0.75 | 0.820 | 1.000 | 0.248 | 0.398 | 34 | 103 | 0 | 0 |
-| 0.80 | 0.771 | 1.000 | 0.044 | 0.084 | 6 | 131 | 0 | 0 |
-| 0.85 | 0.762 | 1.000 | 0.007 | 0.015 | 1 | 136 | 0 | 0 |
+| 0.15 | 0.240 | 0.237 | 0.964 | 0.381 | 135 | 0 | 429 | 5 |
+| 0.20 | 0.257 | 0.241 | 0.964 | 0.386 | 135 | 0 | 419 | 5 |
+| 0.25 | 0.342 | 0.264 | 0.964 | 0.415 | 135 | 0 | 371 | 5 |
+| 0.30 | 0.496 | 0.319 | 0.957 | 0.479 | 134 | 2 | 282 | 4 |
+| 0.35 | 0.713 | 0.455 | 0.936 | 0.612 | 131 | 7 | 155 | 2 |
+| 0.40 | 0.898 | 0.747 | 0.886 | 0.810 | 124 | 16 | 42 | 0 |
+| 0.45 | 0.951 | 0.931 | 0.864 | 0.896 | 121 | 19 | 9 | 0 |
+| **0.50** | **0.955** | **1.000** | **0.814** | **0.898 ← best** | 114 | 26 | 0 | 0 |
+| 0.55 | 0.930 | 1.000 | 0.714 | 0.833 | 100 | 40 | 0 | 0 |
+| 0.60 | 0.905 | 1.000 | 0.614 | 0.761 | 86 | 54 | 0 | 0 |
+| 0.65 | 0.879 | 1.000 | 0.507 | 0.673 | 71 | 69 | 0 | 0 |
+| 0.70 | 0.848 | 1.000 | 0.379 | 0.549 | 53 | 87 | 0 | 0 |
+| 0.75 | 0.814 | 1.000 | 0.243 | 0.391 | 34 | 106 | 0 | 0 |
+| 0.80 | 0.765 | 1.000 | 0.043 | 0.082 | 6 | 134 | 0 | 0 |
+| 0.85 | 0.757 | 1.000 | 0.007 | 0.014 | 1 | 139 | 0 | 0 |
 
 ## Solo vs. group photos, at each strategy's best threshold
 
 Group photos are consistently harder — more distractor faces per image means more chances for
-a false match, and the gap is wider for SFace than for pipeline A:
+a false match:
 
 | Strategy | Threshold | one_person F1 | few_people F1 |
 |---|---|---|---|
-| TOP1 | 0.45 | 0.942 | 0.853 |
-| **TOP2** | **0.45** | **0.948** | **0.857** |
-| TOP3 | 0.40 | 0.942 | 0.832 |
-| Centroid | 0.50 | 0.938 | 0.855 |
+| TOP1 | 0.45 | 0.942 | 0.863 |
+| **TOP2** | **0.45** | **0.948** | **0.867** |
+| TOP3 | 0.40 | 0.942 | 0.842 |
+| Centroid | 0.50 | 0.938 | 0.865 |
 
 ## Takeaways
 
-1. **Threshold 0.45–0.50 is the operating range**, notably higher than pipeline A's 0.30–0.35 —
-   SFace similarity scores sit higher across the board, so a ResNet-style threshold would let
-   in hundreds of false identifications.
-2. **Strategy choice matters here**, unlike in pipeline A. TOP2 is shipped as the best pooled
-   F1; TOP3 is the weakest by ~1.7 points. Centroid is close behind TOP2 and is the
-   precision-favouring choice (0.983 precision at 0.50, at the cost of recall).
-3. **This model is threshold-sensitive.** Between 0.30 and 0.45 F1 nearly doubles. If you
-   change the threshold, re-check it against your own data rather than nudging it by feel.
-4. **Confusing one known person for another is rare and avoidable** — 0 occurrences at the
-   recommended threshold.
-5. **Expect group photos to score ~9 F1 points below solo photos** — a property of
-   distractor-rich images, not something tuning fixes.
+1. **Threshold 0.45 is the operating point for TOP2.** Below 0.40 precision falls apart fast;
+   above 0.50 recall drops without buying precision, which is already at 1.000.
+2. **Strategy choice does matter here** — 0.886 (TOP3) to 0.903 (TOP2), and each strategy
+   peaks at a different threshold (0.40–0.50). Changing one means re-tuning the other.
+3. **Confusing one known person for another is rare and avoidable** — 0 occurrences at the
+   recommended threshold, though SFace does produce a few at thresholds below 0.40, where
+   pipeline A produces almost none.
+4. **Expect group photos to score ~8 F1 points below solo photos** — a wider gap than
+   pipeline A's, since SFace's weaker embeddings are hit harder by distractor-rich images.
 
 ## Compared with pipeline A (ResNet50@WebFace600K)
 
 | | Pipeline B (this one) | Pipeline A (ResNet50) |
 |---|---|---|
-| Best F1 | 0.898 | **0.960** |
+| Best F1 | 0.903 | **0.978** |
 | Threshold | 0.45 | 0.30 |
 | Embedding size | 128-d | 512-d |
 | Recognition model on disk | ~37 MB | ~166 MB |
-| Sensitivity to strategy | noticeable (0.881–0.898) | negligible (within 0.0006) |
+| Sensitivity to strategy | noticeable (0.886–0.903) | negligible (within 0.004) |
 
-**Pipeline A is the accuracy recommendation** — ~6 F1 points ahead and far less sensitive to
-configuration. Choose pipeline B when the smaller, faster recognizer matters more than those
-6 points. Note that both pipelines download the same `buffalo_l` pack for detection, so
-pipeline B's disk saving is in the recognition model, not the total download.
+**Pipeline A is the accuracy recommendation** — ~7 F1 points ahead and far less sensitive to
+configuration. This pipeline is the choice when the smaller, faster recognizer matters more
+than those 7 points. Both pipelines download the same `buffalo_l` pack for detection, so the
+saving here is in the recognition model, not the total download.

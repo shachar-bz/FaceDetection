@@ -6,7 +6,7 @@ This repository evaluates a pipeline that identifies people from a closed, prede
 
 The study has two stages. The first compares face detection models on how reliably they report whether faces are present in an image and how many. The second compares face embedding models, matching strategies, and decision thresholds on how accurately they name a person from the reference database.
 
-The final selected configuration is packaged as a standalone pipeline in [pipeline_a_resnet50_webface600k/](pipeline_a_resnet50_webface600k/).
+The final selected configuration is packaged as a standalone pipeline in [pipeline_A_resnet50_webface600k/](pipeline_A_resnet50_webface600k/). The runner-up configuration is packaged the same way in [pipeline_B_sface/](pipeline_B_sface/).
 
 ---
 
@@ -106,10 +106,12 @@ Reference images were filtered to those containing **exactly one detected face**
 | Scope | Images | Faces | Known | Unknown |
 |---|---|---|---|---|
 | `one_person` | 120 | 129 | 60 | 69 |
-| `few_people` | 130 | 442 | 77 | 365 |
-| `pooled` | 250 | 571 | 137 | 434 |
+| `few_people` | 130 | 442 | 80 | 362 |
+| `pooled` | 250 | 571 | 140 | 431 |
 
-"Known" means the face belongs to a person in the reference database; the other 434 are distractors that should be rejected. Each labelled face was paired with a detected face by box overlap (IoU ≥ 0.5); all 571 were matched, so no labelled face was left without an embedding.
+"Known" means the face belongs to a person in the reference database; the other 431 are distractors that should be rejected. Each labelled face was paired with a detected face by box overlap (IoU ≥ 0.5); all 571 were matched, so no labelled face was left without an embedding.
+
+Error analysis of an earlier scoring run surfaced five mislabelled faces, which were re-reviewed image-by-image and corrected: four distractors that were in fact known people (one of them confirmed by the source clip's own watermark), and one face labelled with a name whose box contains only the back of a head — no facial pixels, so it was relabelled `unknown`. This moved the split from 137/434 to 140/431. The per-image list is in [results_identification/RESULTS.md](results_identification/RESULTS.md).
 
 ### Embedding Models
 
@@ -159,32 +161,43 @@ Outcomes tracked per face:
 | `unknown_as_known` | Distractor assigned an identity (precision loss) |
 | `wrong_identity` | Known face matched to a *different* known person |
 
+The three error outcomes, in plain terms:
+
+- **`unknown_as_known`** — a person who isn't in the database at all, but the system says they're a known person anyway.
+  Example: a stranger walks in → the system says "That's X." This is a false positive / false accept.
+- **`known_as_unknown`** — the person *is* in the database, but the system wasn't confident enough, so it said `unknown`.
+  Example: it's really X → but the score is below the threshold → the system says `unknown`. This is a false negative / false reject.
+- **`wrong_identity`** — the person *is* in the database, and the system did decide they're known, but it picked the wrong person.
+  Example: it's really Y → the system says "That's Z."
+
 The best threshold per model and strategy was chosen by highest F1 on the pooled scope.
 
 ### Results — best operating point per configuration
 
 | Model | Strategy | Threshold | F1 | Precision | Recall | Accuracy | wrong_identity |
 |---|---|---|---|---|---|---|---|
-| ResNet50@WebFace600K | TOP1 | 0.35 | 0.959 | 0.977 | 0.942 | 0.981 | 0 |
-| **ResNet50@WebFace600K** | **TOP2** | **0.30** | **0.960** | 0.963 | 0.956 | 0.981 | 0 |
-| ResNet50@WebFace600K | TOP3 | 0.30 | 0.959 | 0.970 | 0.949 | 0.981 | 0 |
-| ResNet50@WebFace600K | Centroid | 0.30 | 0.959 | 0.970 | 0.949 | 0.981 | 0 |
-| SFace | TOP1 | 0.45 | 0.894 | 0.929 | 0.861 | 0.951 | 0 |
-| SFace | TOP2 | 0.45 | 0.898 | 0.966 | 0.839 | 0.955 | 0 |
-| SFace | TOP3 | 0.40 | 0.882 | 0.895 | 0.869 | 0.944 | 0 |
-| SFace | Centroid | 0.50 | 0.892 | 0.983 | 0.818 | 0.953 | 0 |
+| ResNet50@WebFace600K | TOP1 | 0.30 | 0.975 | 0.985 | 0.964 | 0.988 | 0 |
+| **ResNet50@WebFace600K** | **TOP2** | **0.30** | **0.978** | 0.993 | 0.964 | 0.990 | 0 |
+| ResNet50@WebFace600K | TOP3 | 0.30 | 0.978 | 1.000 | 0.957 | 0.990 | 0 |
+| ResNet50@WebFace600K | Centroid | 0.30 | 0.978 | 1.000 | 0.957 | 0.990 | 0 |
+| SFace | TOP1 | 0.45 | 0.899 | 0.945 | 0.857 | 0.953 | 0 |
+| SFace | TOP2 | 0.45 | 0.903 | 0.983 | 0.836 | 0.956 | 0 |
+| SFace | TOP3 | 0.40 | 0.886 | 0.910 | 0.864 | 0.946 | 0 |
+| SFace | Centroid | 0.50 | 0.898 | 1.000 | 0.814 | 0.955 | 0 |
+
+All four ResNet strategies peak at the same threshold, 0.30, within 0.0002 F1 of each other.
 
 ### Results — threshold sensitivity (ResNet50@WebFace600K, TOP2, pooled)
 
 | Threshold | Accuracy | Precision | Recall | F1 | known→unknown | unknown→known |
 |---|---|---|---|---|---|---|
-| 0.20 | 0.820 | 0.570 | 0.978 | 0.720 | 2 | 100 |
-| 0.25 | 0.953 | 0.856 | 0.956 | 0.903 | 5 | 21 |
-| **0.30** | **0.981** | **0.963** | **0.956** | **0.960** | 6 | 5 |
-| 0.35 | 0.974 | 0.977 | 0.912 | 0.943 | 12 | 3 |
-| 0.40 | 0.962 | 0.975 | 0.861 | 0.915 | 19 | 3 |
-| 0.50 | 0.933 | 0.981 | 0.737 | 0.842 | 36 | 2 |
-| 0.60 | 0.874 | 1.000 | 0.474 | 0.644 | 72 | 0 |
+| 0.20 | 0.828 | 0.587 | 0.986 | 0.736 | 1 | 96 |
+| 0.25 | 0.962 | 0.882 | 0.964 | 0.921 | 4 | 17 |
+| **0.30** | **0.990** | **0.993** | **0.964** | **0.978** | 5 | 1 |
+| 0.35 | 0.979 | 1.000 | 0.914 | 0.955 | 12 | 0 |
+| 0.40 | 0.967 | 1.000 | 0.864 | 0.927 | 19 | 0 |
+| 0.50 | 0.935 | 1.000 | 0.736 | 0.848 | 37 | 0 |
+| 0.60 | 0.869 | 1.000 | 0.464 | 0.634 | 75 | 0 |
 
 Every configuration follows this shape: below the optimum, distractors flood in and precision collapses; above it, real matches are silently rejected and recall collapses. SFace needs a threshold roughly 0.15 higher than ResNet to reach its equivalent operating point.
 
@@ -194,16 +207,16 @@ At each configuration's best pooled threshold:
 
 | Model | Strategy | Threshold | `one_person` F1 | `few_people` F1 |
 |---|---|---|---|---|
-| ResNet50@WebFace600K | TOP1 | 0.35 | 0.983 | 0.940 |
-| ResNet50@WebFace600K | TOP2 | 0.30 | 0.983 | 0.941 |
-| ResNet50@WebFace600K | TOP3 | 0.30 | 0.983 | 0.940 |
-| ResNet50@WebFace600K | Centroid | 0.30 | 0.983 | 0.940 |
-| SFace | TOP1 | 0.45 | 0.942 | 0.853 |
-| SFace | TOP2 | 0.45 | 0.948 | 0.857 |
-| SFace | TOP3 | 0.40 | 0.942 | 0.832 |
-| SFace | Centroid | 0.50 | 0.938 | 0.855 |
+| ResNet50@WebFace600K | TOP1 | 0.30 | 1.000 | 0.955 |
+| ResNet50@WebFace600K | TOP2 | 0.30 | 1.000 | 0.962 |
+| ResNet50@WebFace600K | TOP3 | 0.30 | 1.000 | 0.961 |
+| ResNet50@WebFace600K | Centroid | 0.30 | 1.000 | 0.961 |
+| SFace | TOP1 | 0.45 | 0.942 | 0.863 |
+| SFace | TOP2 | 0.45 | 0.948 | 0.867 |
+| SFace | TOP3 | 0.40 | 0.942 | 0.842 |
+| SFace | Centroid | 0.50 | 0.938 | 0.865 |
 
-Group photos run 4–13 F1 points below single-person photos for every configuration.
+Group photos run 4–10 F1 points below single-person photos for every configuration. ResNet is perfect on `one_person` at 0.30 under all four strategies, so every error it makes is in a group photo.
 
 The full sweep across all 15 thresholds, both models, and all four strategies is in [results_identification/RESULTS.md](results_identification/RESULTS.md).
 
@@ -218,11 +231,11 @@ The full sweep across all 15 thresholds, both models, and all four strategies is
 | Matching strategy | TOP2 (mean similarity to a person's 2 closest reference images) |
 | Threshold | 0.30 cosine similarity |
 
-ResNet50@WebFace600K leads SFace by 6–8 F1 points and is far less sensitive to the strategy chosen — TOP1, TOP2, TOP3, and Centroid land within 0.001 F1 of each other at 0.30. TOP2 was taken as the peak of that flat region; it tolerates one bad reference image per person better than TOP1, without needing three good ones like TOP3.
+ResNet50@WebFace600K leads SFace by 7–8 F1 points and is far less sensitive to the strategy chosen — TOP1, TOP2, TOP3, and Centroid all peak at 0.30 and land within 0.0002 F1 of each other there. TOP2 was taken as the peak of that flat region; it tolerates one bad reference image per person better than TOP1, without needing three good ones like TOP3.
 
-At 0.30 the errors are balanced (6 known faces rejected, 5 distractors named) and `wrong_identity` is 0 — misnaming one known person as another only appears at thresholds well below the optimum.
+At 0.30 only 6 of the 571 faces are scored wrong — 5 known faces rejected as `unknown`, 1 distractor named — and `wrong_identity` is 0: misnaming one known person as another only appears at thresholds well below the optimum. In 3 of the 5 rejections the top-ranked candidate was already the correct person, just below the threshold, so the failure mode is under-confidence rather than confusion. All 6 errors are in group photos.
 
-This configuration is packaged in [pipeline_a_resnet50_webface600k/](pipeline_a_resnet50_webface600k/), where the model, strategy, and threshold are all defined in [face_pipeline.py](pipeline_a_resnet50_webface600k/face_pipeline.py).
+This configuration is packaged in [pipeline_A_resnet50_webface600k/](pipeline_A_resnet50_webface600k/), where the model, strategy, and threshold are all defined in [face_pipeline.py](pipeline_A_resnet50_webface600k/face_pipeline.py). [pipeline_B_sface/](pipeline_B_sface/) packages the SFace alternative (TOP2 at threshold 0.45) in the same shape, for comparison.
 
 ---
 
@@ -231,7 +244,7 @@ This configuration is packaged in [pipeline_a_resnet50_webface600k/](pipeline_a_
 - **Detection accuracy is lenient on multi-face images.** Ground truth is categorical (`0`/`1`/`2+`), so a group photo counts as correct whenever more than one face is found — the exact count was not required. The 94.8% multi-face figure is therefore an upper bound on exact-count accuracy.
 - **The two stages use different data.** Detection was scored on Open Images; identification on real social-media images. The detection figures do not transfer directly to the identification set.
 - **Identification metrics isolate the matching step.** All 571 labelled faces were faces the detector had already found, so detector misses are not reflected in the identification numbers.
-- **The threshold depends on the known/unknown mix.** The evaluation set is 24% known faces. A deployment with a very different base rate will shift the precision/recall balance and may need re-tuning.
+- **The threshold depends on the known/unknown mix.** The evaluation set is 25% known faces. A deployment with a very different base rate will shift the precision/recall balance and may need re-tuning.
 - **The reference database is domain-specific.** 234 Israeli public figures with 3–5 images each; identity coverage, image quality, and per-person image count all affect where the optimal threshold lands.
 
 ---
@@ -248,4 +261,5 @@ This configuration is packaged in [pipeline_a_resnet50_webface600k/](pipeline_a_
 | `results_blazeface/`, `results_scrfd/` | Detection results per model |
 | `results_embeddings/`, `results_eval_embeddings/` | Reference and evaluation embeddings with manifests |
 | [results_identification/](results_identification/) | Identification metrics and the full write-up |
-| [pipeline_a_resnet50_webface600k/](pipeline_a_resnet50_webface600k/) | The final selected configuration, packaged standalone |
+| [pipeline_A_resnet50_webface600k/](pipeline_A_resnet50_webface600k/) | The final selected configuration, packaged standalone |
+| [pipeline_B_sface/](pipeline_B_sface/) | The SFace alternative, packaged the same way |
