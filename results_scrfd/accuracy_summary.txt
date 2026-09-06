@@ -1,0 +1,16 @@
+=== scrfd_10g_kps ===
+  TP=248  TN=150  FP=0  FN=13  (n=411)
+  accuracy  = 96.8%
+  precision = 100.0%
+  recall    = 95.0%
+
+  by group:
+                    TP     TN   FP   FN accuracy precision recall
+group                                                            
+no_person          0.0  150.0  0.0  0.0   100.0%       n/a    n/a
+one_person       138.0    0.0  0.0  7.0    95.2%    100.0%  95.2%
+multiple_people  110.0    0.0  0.0  6.0    94.8%    100.0%  94.8%
+
+  wrote per-image outcomes -> results_scrfd\accuracy_scrfd_10g_kps.csv
+  wrote per-group metrics -> results_scrfd\accuracy_by_group_scrfd_10g_kps.csv
+
