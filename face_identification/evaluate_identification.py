@@ -83,12 +83,6 @@ class EvaluationFace:
     embedding_row: int | None
 
 
-def normalize_person_name(name: str) -> str:
-    """Reconciles ground-truth names with database folder names: a name-final apostrophe
-    was sanitized to a trailing underscore in some labels but dropped entirely in others."""
-    return name.strip().rstrip("_").strip()
-
-
 def resolve_group(image_id: str) -> str:
     """Names the evaluation group an image belongs to; every image is named after its group folder."""
     for group in EVALUATION_GROUPS:
@@ -103,8 +97,7 @@ def load_reference_database(manifest_path: Path) -> ReferenceDatabase:
     folders left on disk by earlier builds are ignored."""
     manifest = pd.read_csv(manifest_path)
     manifest = manifest[manifest["error"].fillna("") == ""].copy()
-    manifest["person_name"] = manifest["person"].map(normalize_person_name)
-    manifest = manifest.sort_values(["person_name", "embedding_path"], kind="stable").reset_index(drop=True)
+    manifest = manifest.sort_values(["person", "embedding_path"], kind="stable").reset_index(drop=True)
 
     embeddings_by_model = {model_name: [] for model_name in EMBEDDING_MODEL_KEYS}
     for embedding_path in manifest["embedding_path"]:
@@ -114,7 +107,7 @@ def load_reference_database(manifest_path: Path) -> ReferenceDatabase:
     embeddings_by_model = {name: np.stack(rows).astype(np.float32) for name, rows in embeddings_by_model.items()}
 
     person_names, start_indices, counts = np.unique(
-        manifest["person_name"].to_numpy(), return_index=True, return_counts=True)
+        manifest["person"].to_numpy(), return_index=True, return_counts=True)
     person_slices = [(int(start), int(start + count)) for start, count in zip(start_indices, counts)]
 
     centroids_by_model = {}
@@ -201,7 +194,7 @@ def build_evaluation_faces(
             evaluation_faces.append(EvaluationFace(
                 image_id=image_id,
                 group=resolve_group(image_id),
-                ground_truth_person=normalize_person_name(labelled_face["person_name"]),
+                ground_truth_person=labelled_face["person_name"],
                 embedding_row=embedding_row,
             ))
 
