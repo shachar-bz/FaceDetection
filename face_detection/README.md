@@ -2,22 +2,22 @@
 
 Evaluates face detectors — MediaPipe Face Detector (BlazeFace `short_range`
 and `full_range` variants) and SCRFD-10G-KPS — against the 500-image sample
-in `mediapipe-face-detection-images/`, to pick a model, confidence
+in `detecting_faces_data/`, to pick a model, confidence
 threshold, and crop margin for the face-embedding pipeline.
 
 ## Setup
 
 ```
 pip install -r requirements.txt
-python scripts/download_face_detector_models.py   # -> models/*.tflite
-python scripts/download_scrfd_model.py             # -> models/scrfd_10g_kps.onnx
+python downloading_models_scripts/download_face_detector_models.py  # -> models/*.tflite
+python downloading_models_scripts/download_scrfd_model.py           # -> models/scrfd_10g_kps.onnx
 ```
 
 ## Scripts
 
 - `face_detection/detect.py` — runs both BlazeFace variants over every image
   in the manifest, writes per-image detection counts/scores/boxes to
-  `output/detections_<variant>.csv`.
+  `<output-dir>/detections_<variant>.csv`.
 - `face_detection/detect_scrfd.py` — same contract as `detect.py`, for the
   SCRFD-10G-KPS ONNX model; writes `detections_scrfd_10g_kps.csv`.
 - `face_detection/accuracy_report.py` — scores a detections CSV against
@@ -25,6 +25,9 @@ python scripts/download_scrfd_model.py             # -> models/scrfd_10g_kps.onn
   `--variants` to target any set of variant names.
 - `face_detection/summarize.py` — turns a detections CSV into recall /
   false-positive stats, broken down by brightness, framing, and orientation.
+- `face_detection/detection_common.py` — helpers shared by the scripts
+  above: the two detector constructors, the square crop-box expansion
+  formula, the BlazeFace model filenames, and the detection defaults.
 - `face_detection/threshold_sweep.py` — re-thresholds a low-confidence
   (`--min-confidence 0.1`) detection run to show the recall vs.
   false-positive trade-off across confidence cutoffs without re-running
@@ -37,7 +40,7 @@ MediaPipe variants) since it's a different model with a different accuracy
 report:
 
 ```
-python face_detection/detect_scrfd.py --images-root mediapipe-face-detection-images --manifest mediapipe-face-detection-images/manifest.csv --model models/scrfd_10g_kps.onnx --output-dir results_scrfd
+python face_detection/detect_scrfd.py --images-root detecting_faces_data --manifest detecting_faces_data/manifest.csv --model models/scrfd_10g_kps.onnx --output-dir results_scrfd
 python face_detection/accuracy_report.py --results-dir results_scrfd --variants scrfd_10g_kps
 ```
 
@@ -75,3 +78,10 @@ both BlazeFace variants on this sample: 96.8% accuracy / 100% precision /
   `max(box_w, box_h)`) reliably captures the full head with a little hair/
   neck margin. Beyond ~40% the crop increasingly wastes area on
   background, which would dilute a downstream embedding model's input.
+  **Superseded for the embedding pipeline:** once alignment moved into the
+  packaged pipelines (InsightFace `FaceAnalysis` and OpenCV SFace's
+  `alignCrop()`), the crop margin stopped being ours to pick — each
+  recognizer warps the face to its own reference points straight from the
+  detected keypoints, with no intermediate square crop. The finding still
+  describes how tight the raw boxes are, and `--margin` still controls the
+  annotated preview images.

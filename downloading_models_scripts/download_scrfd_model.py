@@ -11,6 +11,7 @@ from pathlib import Path
 
 MODEL_PACK_URL = "https://github.com/deepinsight/insightface/releases/download/v0.7/buffalo_l.zip"
 MODEL_IN_PACK = "det_10g.onnx"
+# Passed to face_detection/detect_scrfd.py and annotate_dataset_scrfd.py as --model.
 DEST_FILENAME = "scrfd_10g_kps.onnx"
 
 

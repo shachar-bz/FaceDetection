@@ -2,6 +2,8 @@
 import urllib.request
 from pathlib import Path
 
+# These filenames must stay in step with face_detection/detection_common.py's
+# BLAZE_FACE_SHORT_RANGE_FILENAME / BLAZE_FACE_FULL_RANGE_FILENAME.
 MODELS = {
     "blaze_face_short_range.tflite": (
         "https://storage.googleapis.com/mediapipe-models/face_detector/"

@@ -14,6 +14,13 @@ import numpy as np
 import pandas as pd
 from insightface.model_zoo.scrfd import SCRFD
 
+from detection_common import (
+    DEFAULT_MIN_CONFIDENCE,
+    DEFAULT_SCRFD_INPUT_SIZE,
+    DEFAULT_SCRFD_NMS_THRESH,
+    build_scrfd_detector,
+)
+
 VARIANT_NAME = "scrfd_10g_kps"
 
 MANIFEST_COLUMNS = [
@@ -38,12 +45,6 @@ class Detection:
     h: int
 
 
-def build_detector(model_path: Path, min_confidence: float, input_size: int, nms_thresh: float) -> SCRFD:
-    detector = SCRFD(model_file=str(model_path))
-    detector.prepare(ctx_id=-1, det_thresh=min_confidence, input_size=(input_size, input_size), nms_thresh=nms_thresh)
-    return detector
-
-
 def detect_faces(detector: SCRFD, image_bgr: np.ndarray) -> list[Detection]:
     boxes, _ = detector.detect(image_bgr)
     detections = []
@@ -60,7 +61,7 @@ def run_variant(
     input_size: int,
     nms_thresh: float,
 ) -> pd.DataFrame:
-    detector = build_detector(model_path, min_confidence, input_size, nms_thresh)
+    detector = build_scrfd_detector(model_path, min_confidence, input_size, nms_thresh)
     rows = []
     for _, row in manifest.iterrows():
         image_path = images_root / row["relative_path"]
@@ -87,9 +88,9 @@ def main() -> None:
     parser.add_argument("--images-root", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--model", type=Path, required=True)
-    parser.add_argument("--min-confidence", type=float, default=0.5)
-    parser.add_argument("--input-size", type=int, default=640, help="Square SCRFD input resolution")
-    parser.add_argument("--nms-thresh", type=float, default=0.4)
+    parser.add_argument("--min-confidence", type=float, default=DEFAULT_MIN_CONFIDENCE)
+    parser.add_argument("--input-size", type=int, default=DEFAULT_SCRFD_INPUT_SIZE, help="Square SCRFD input resolution")
+    parser.add_argument("--nms-thresh", type=float, default=DEFAULT_SCRFD_NMS_THRESH)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument(
         "--limit-per-group",

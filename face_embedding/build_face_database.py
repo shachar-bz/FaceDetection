@@ -33,6 +33,9 @@ DEFAULT_DET_SIZE = 640
 # recognition; FaceAnalysis downloads/caches it under --insightface-root on first use.
 DEFAULT_MODEL_PACK_NAME = "buffalo_l"
 DEFAULT_INSIGHTFACE_ROOT = Path("~/.insightface")
+# SFace recognition model, as written into models/ by
+# downloading_models_scripts/download_recognition_models.py.
+DEFAULT_SFACE_MODEL_PATH = Path("models/sface_2021dec.onnx")
 
 MANIFEST_COLUMNS = [
     "group",
@@ -186,7 +189,7 @@ def main() -> None:
                          help="InsightFace model pack name (bundles SCRFD detection + ResNet50@WebFace600K recognition)")
     parser.add_argument("--insightface-root", type=Path, default=DEFAULT_INSIGHTFACE_ROOT,
                          help="Where FaceAnalysis caches/downloads --model-pack")
-    parser.add_argument("--sface-model", type=Path, default=Path("models/sface_2021dec.onnx"))
+    parser.add_argument("--sface-model", type=Path, default=DEFAULT_SFACE_MODEL_PATH)
     parser.add_argument("--min-confidence", type=float, default=DEFAULT_MIN_CONFIDENCE)
     parser.add_argument("--det-size", type=int, default=DEFAULT_DET_SIZE)
     parser.add_argument("--output-dir", type=Path, required=True)

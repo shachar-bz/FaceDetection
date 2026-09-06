@@ -13,25 +13,15 @@ from pathlib import Path
 import cv2
 import mediapipe as mp
 import pandas as pd
-from mediapipe.tasks import python as mp_python
-from mediapipe.tasks.python import vision as mp_vision
+
+from detection_common import (
+    DEFAULT_CROP_MARGIN_RATIO,
+    DEFAULT_MIN_CONFIDENCE,
+    build_blazeface_detector,
+    expand_box_square,
+)
 
 MANIFEST_COLUMNS_NEEDED = ["group", "relative_path"]
-
-
-def build_detector(model_path: Path, min_confidence: float) -> mp_vision.FaceDetector:
-    base_options = mp_python.BaseOptions(model_asset_path=str(model_path))
-    options = mp_vision.FaceDetectorOptions(base_options=base_options, min_detection_confidence=min_confidence)
-    return mp_vision.FaceDetector.create_from_options(options)
-
-
-def expand_box_square(x: int, y: int, w: int, h: int, margin_ratio: float, img_w: int, img_h: int):
-    cx, cy = x + w / 2, y + h / 2
-    side = max(w, h) * (1 + 2 * margin_ratio)
-    half = side / 2
-    x0, y0 = max(0, cx - half), max(0, cy - half)
-    x1, y1 = min(img_w, cx + half), min(img_h, cy + half)
-    return int(x0), int(y0), int(x1), int(y1)
 
 
 def annotate(image_bgr, detections, margin_ratio: float) -> None:
@@ -56,14 +46,14 @@ def main() -> None:
     parser.add_argument("--images-root", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--model", type=Path, required=True)
-    parser.add_argument("--min-confidence", type=float, default=0.5)
-    parser.add_argument("--margin", type=float, default=0.5,
+    parser.add_argument("--min-confidence", type=float, default=DEFAULT_MIN_CONFIDENCE)
+    parser.add_argument("--margin", type=float, default=DEFAULT_CROP_MARGIN_RATIO,
                          help="Fraction of max(box_w, box_h) to expand the box by, on each side")
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
 
     manifest = pd.read_csv(args.manifest, encoding="utf-8-sig")
-    detector = build_detector(args.model, args.min_confidence)
+    detector = build_blazeface_detector(args.model, args.min_confidence)
 
     written = 0
     skipped = 0

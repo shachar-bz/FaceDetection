@@ -12,6 +12,7 @@ SFACE_URL = (
     "https://github.com/opencv/opencv_zoo/raw/main/models/"
     "face_recognition_sface/face_recognition_sface_2021dec.onnx"
 )
+# Must stay in step with face_embedding/build_face_database.py's DEFAULT_SFACE_MODEL_PATH.
 SFACE_DEST_FILENAME = "sface_2021dec.onnx"
 
 

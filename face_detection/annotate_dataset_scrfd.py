@@ -10,24 +10,17 @@ from pathlib import Path
 
 import cv2
 import pandas as pd
-from insightface.model_zoo.scrfd import SCRFD
+
+from detection_common import (
+    DEFAULT_CROP_MARGIN_RATIO,
+    DEFAULT_MIN_CONFIDENCE,
+    DEFAULT_SCRFD_INPUT_SIZE,
+    DEFAULT_SCRFD_NMS_THRESH,
+    build_scrfd_detector,
+    expand_box_square,
+)
 
 MANIFEST_COLUMNS_NEEDED = ["group", "relative_path"]
-
-
-def build_detector(model_path: Path, min_confidence: float, input_size: int, nms_thresh: float) -> SCRFD:
-    detector = SCRFD(model_file=str(model_path))
-    detector.prepare(ctx_id=-1, det_thresh=min_confidence, input_size=(input_size, input_size), nms_thresh=nms_thresh)
-    return detector
-
-
-def expand_box_square(x: int, y: int, w: int, h: int, margin_ratio: float, img_w: int, img_h: int):
-    cx, cy = x + w / 2, y + h / 2
-    side = max(w, h) * (1 + 2 * margin_ratio)
-    half = side / 2
-    x0, y0 = max(0, cx - half), max(0, cy - half)
-    x1, y1 = min(img_w, cx + half), min(img_h, cy + half)
-    return int(x0), int(y0), int(x1), int(y1)
 
 
 def annotate(image_bgr, boxes, margin_ratio: float) -> None:
@@ -48,16 +41,16 @@ def main() -> None:
     parser.add_argument("--images-root", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--model", type=Path, required=True)
-    parser.add_argument("--min-confidence", type=float, default=0.5)
-    parser.add_argument("--input-size", type=int, default=640, help="Square SCRFD input resolution")
-    parser.add_argument("--nms-thresh", type=float, default=0.4)
-    parser.add_argument("--margin", type=float, default=0.5,
+    parser.add_argument("--min-confidence", type=float, default=DEFAULT_MIN_CONFIDENCE)
+    parser.add_argument("--input-size", type=int, default=DEFAULT_SCRFD_INPUT_SIZE, help="Square SCRFD input resolution")
+    parser.add_argument("--nms-thresh", type=float, default=DEFAULT_SCRFD_NMS_THRESH)
+    parser.add_argument("--margin", type=float, default=DEFAULT_CROP_MARGIN_RATIO,
                          help="Fraction of max(box_w, box_h) to expand the box by, on each side")
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
 
     manifest = pd.read_csv(args.manifest, encoding="utf-8-sig")
-    detector = build_detector(args.model, args.min_confidence, args.input_size, args.nms_thresh)
+    detector = build_scrfd_detector(args.model, args.min_confidence, args.input_size, args.nms_thresh)
 
     written = 0
     skipped = 0

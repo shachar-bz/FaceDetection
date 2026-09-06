@@ -14,8 +14,14 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import pandas as pd
-from mediapipe.tasks import python as mp_python
 from mediapipe.tasks.python import vision as mp_vision
+
+from detection_common import (
+    BLAZE_FACE_FULL_RANGE_FILENAME,
+    BLAZE_FACE_SHORT_RANGE_FILENAME,
+    DEFAULT_MIN_CONFIDENCE,
+    build_blazeface_detector,
+)
 
 MANIFEST_COLUMNS = [
     "image_id",
@@ -39,15 +45,6 @@ class Detection:
     h: int
 
 
-def build_detector(model_path: Path, min_confidence: float) -> mp_vision.FaceDetector:
-    base_options = mp_python.BaseOptions(model_asset_path=str(model_path))
-    options = mp_vision.FaceDetectorOptions(
-        base_options=base_options,
-        min_detection_confidence=min_confidence,
-    )
-    return mp_vision.FaceDetector.create_from_options(options)
-
-
 def detect_faces(detector: mp_vision.FaceDetector, image_bgr: np.ndarray) -> list[Detection]:
     rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
@@ -67,7 +64,7 @@ def run_variant(
     images_root: Path,
     min_confidence: float,
 ) -> pd.DataFrame:
-    detector = build_detector(model_path, min_confidence)
+    detector = build_blazeface_detector(model_path, min_confidence)
     rows = []
     try:
         for _, row in manifest.iterrows():
@@ -97,7 +94,7 @@ def main() -> None:
     parser.add_argument("--images-root", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--models-dir", type=Path, required=True)
-    parser.add_argument("--min-confidence", type=float, default=0.5)
+    parser.add_argument("--min-confidence", type=float, default=DEFAULT_MIN_CONFIDENCE)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument(
         "--limit-per-group",
@@ -113,8 +110,8 @@ def main() -> None:
         manifest = manifest.groupby("group", group_keys=False).head(args.limit_per_group)
 
     model_variants = {
-        "short_range": args.models_dir / "blaze_face_short_range.tflite",
-        "full_range": args.models_dir / "blaze_face_full_range.tflite",
+        "short_range": args.models_dir / BLAZE_FACE_SHORT_RANGE_FILENAME,
+        "full_range": args.models_dir / BLAZE_FACE_FULL_RANGE_FILENAME,
     }
 
     for variant_name, model_path in model_variants.items():
