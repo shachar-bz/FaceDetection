@@ -249,27 +249,3 @@ This configuration is packaged in [pipeline_a_resnet50_webface600k/](pipeline_a_
 | `results_embeddings/`, `results_eval_embeddings/` | Reference and evaluation embeddings with manifests |
 | [results_identification/](results_identification/) | Identification metrics and the full write-up |
 | [pipeline_a_resnet50_webface600k/](pipeline_a_resnet50_webface600k/) | The final selected configuration, packaged standalone |
-
-## Reproducing
-
-```bash
-pip install -r requirements.txt
-
-# Models
-python downloading_models_scripts/download_face_detector_models.py
-python downloading_models_scripts/download_scrfd_model.py
-python downloading_models_scripts/download_recognition_models.py
-
-# Stage 1 — detection
-python face_detection/detect.py --images-root detecting_faces_data --manifest detecting_faces_data/manifest.csv --output-dir results_blazeface
-python face_detection/accuracy_report.py --results-dir results_blazeface
-python face_detection/detect_scrfd.py --images-root detecting_faces_data --manifest detecting_faces_data/manifest.csv --model models/scrfd_10g_kps.onnx --output-dir results_scrfd
-python face_detection/accuracy_report.py --results-dir results_scrfd --variants scrfd_10g_kps
-
-# Stage 2 — identification
-python face_embedding/build_face_database.py --people-root politicians_images --output-dir results_embeddings
-python face_identification/extract_eval_embeddings.py
-python face_identification/evaluate_identification.py
-```
-
-`buffalo_l` is downloaded and cached automatically by `FaceAnalysis` on first use.
