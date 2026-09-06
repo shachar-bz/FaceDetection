@@ -2,7 +2,7 @@
 
 For each image, draws every detection's bounding box — expanded by
 --margin per side (square crop centered on the raw box, clamped to image
-bounds, same formula as visualize_margins.py) — plus its confidence
+bounds) — plus its confidence
 score, and writes the result to <output-dir>/<group>/<original filename>
 — one folder per group (no_person, one_person, multiple_people), so
 results can be eyeballed category by category.

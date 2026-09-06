@@ -29,9 +29,6 @@ python scripts/download_scrfd_model.py             # -> models/scrfd_10g_kps.onn
   (`--min-confidence 0.1`) detection run to show the recall vs.
   false-positive trade-off across confidence cutoffs without re-running
   the model.
-- `face_detection/visualize_margins.py` — for a list of images, draws the
-  raw bounding box plus square crops expanded by several margin ratios, as
-  a side-by-side contact sheet, to eyeball crop quality.
 
 ## SCRFD-10G-KPS results
 

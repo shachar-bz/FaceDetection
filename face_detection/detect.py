@@ -3,7 +3,7 @@
 For every image listed in manifest.csv, runs both the short-range and
 full-range BlazeFace variants and records the raw detections (score +
 bounding box) to a CSV per variant. summarize.py turns these into
-accuracy stats; visualize_margins.py turns them into crop previews.
+accuracy stats.
 """
 import argparse
 import json
