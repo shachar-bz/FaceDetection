@@ -1,7 +1,7 @@
 # Face detector evaluation
 
 Evaluates face detectors — MediaPipe Face Detector (BlazeFace `short_range`
-and `full_range` variants) and SCRFD-10G-KPS — against the 450-image sample
+and `full_range` variants) and SCRFD-10G-KPS — against the 411-image sample
 in `detecting_faces_data/`, to pick a model, confidence
 threshold, and crop margin for the face-embedding pipeline.
 
@@ -49,7 +49,7 @@ both BlazeFace variants on this sample: 96.8% accuracy / 100% precision /
 70.5% recall. It also had zero false positives on `no_person` images
 (`full_range` had 1).
 
-## Findings (450-image sample, 411 readable: 150 no_person / 145 one_person / 116 multiple_people)
+## Findings (411-image sample: 150 no_person / 145 one_person / 116 multiple_people)
 
 - **`full_range` beats `short_range` at every confidence threshold** tested
   (0.1-0.7) on both recall and false-positive rate — expected, since this

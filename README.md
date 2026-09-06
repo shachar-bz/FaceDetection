@@ -28,17 +28,17 @@ All three ran at a confidence threshold of 0.5. Model download scripts are in [d
 
 ### Test Cases
 
-The dataset is a curated 450-image sample from Open Images V7 and its MIAP subset, described in [detecting_faces_data/README_HE.md](detecting_faces_data/README_HE.md). Each image was visually verified, and the folder is the authoritative label.
+The dataset is a curated 411-image sample from Open Images V7 and its MIAP subset, described in [detecting_faces_data/README_HE.md](detecting_faces_data/README_HE.md). Each image was visually verified, and the folder is the authoritative label. Candidates whose faces were not clear or usable enough for a face-detection benchmark were dropped during curation, so the people groups are deliberately smaller than the no-face group.
 
 | Group | Images | Contents |
 |---|---|---|
 | No Faces | 150 | Objects, landscapes, animals, statues, dolls, and illustrations — no real person |
-| Single Face | 150 | Exactly one person with a usable visible face |
-| Multiple Faces | 150 | Two or more people with at least two visible faces |
+| Single Face | 145 | Exactly one person with a usable visible face |
+| Multiple Faces | 116 | Two or more people with at least two visible faces |
 
 The people groups vary deliberately in pose (frontal and profile), tilt, lighting, partial occlusion, and subject distance.
 
-39 images could not be decoded at runtime and were excluded, leaving **411 scored images** (150 / 145 / 116).
+All three detectors were scored on the same **411 images** (150 / 145 / 116).
 
 ### Evaluation
 
@@ -264,7 +264,7 @@ This configuration is packaged in [pipeline_A_resnet50_webface600k/](pipeline_A_
 
 | Path | Contents |
 |---|---|
-| [detecting_faces_data/](detecting_faces_data/) | 450-image detection dataset, manifest, and curation audit |
+| [detecting_faces_data/](detecting_faces_data/) | 411-image detection dataset, manifest, and curation audit |
 | [face_detection/](face_detection/) | Detection runners, accuracy report, threshold sweep, annotation |
 | [face_embedding/](face_embedding/) | Builds the reference embedding database (both models) |
 | [face_identification/](face_identification/) | Evaluation-set embedding extraction and the identification scorer |
