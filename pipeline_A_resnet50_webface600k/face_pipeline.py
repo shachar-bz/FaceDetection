@@ -25,8 +25,8 @@ MIN_DETECTION_CONFIDENCE = 0.5
 DETECTION_INPUT_SIZE = 640
 
 # Identification settings, chosen from the experiment in README.md.
-# TOP2 = a person's score is the mean cosine similarity to their 2 closest reference images.
-MATCHING_STRATEGY_TOP_K = 2
+# TOP3 = a person's score is the mean cosine similarity to their 3 closest reference images.
+MATCHING_STRATEGY_TOP_K = 3
 IDENTIFICATION_THRESHOLD = 0.30
 UNKNOWN_LABEL = "unknown"
 

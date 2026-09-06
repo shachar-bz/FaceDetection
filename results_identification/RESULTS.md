@@ -251,20 +251,50 @@ remaining errors live in group photos:
 | SFace | TOP3 | 0.40 | 0.942 | 0.842 |
 | SFace | Centroid | 0.50 | 0.938 | 0.865 |
 
-## Error analysis at the selected operating point (ResNet50@WebFace600K, TOP2, 0.30)
+## Choosing between the tied strategies
+
+TOP2, TOP3 and Centroid are separated by 0.0002 F1 at threshold 0.30, and TOP1 by 0.004. On a
+571-face set that is a one-or-two-face difference — well inside the noise this sample size can
+resolve — so F1 alone cannot justify a choice. Breaking the tie on *which* errors each strategy
+makes gives a clearer answer:
+
+| Strategy @ 0.30 | `unknown_as_known` | `known_as_unknown` | F1 | Highest-scoring distractor |
+|---|---|---|---|---|
+| TOP1 | 2 | 5 | 0.975 | 0.3292 |
+| TOP2 | 1 | 5 | 0.978 | 0.3128 |
+| **TOP3 (selected)** | **0** | 6 | 0.978 | 0.2956 |
+| Centroid | 0 | 6 | 0.978 | 0.2979 |
+
+**TOP3 was selected because it produces zero false accepts.** Assigning a known identity to
+someone who is not in the database is the error this system most wants to avoid: a confidently
+wrong name is worse than an `unknown` that a human can follow up on. TOP1 and TOP2 only reach
+their F1 because a distractor scores just above the threshold (0.3292 and 0.3128 against a
+0.30 cut), whereas under TOP3 no unknown face ever exceeds 0.2956.
+
+TOP3 is preferred over Centroid, which also reaches zero, because **each person in the reference
+database has only 3–5 images** (234 people, min 3, mean 4.05). A centroid averaged over so few
+samples is a fragile estimate of a person's appearance — one atypical photo (unusual lighting,
+angle, or age) permanently shifts that person's single vector. TOP3 picks the 3 closest
+reference images per query instead, so an outlier photo is simply not selected when it does not
+help. Since every person has at least 3 images, TOP3 never falls back to fewer.
+
+The cost is one extra missed known face relative to TOP2 — a face reported `unknown` rather
+than named, which is the safer direction to err in.
+
+## Error analysis at the selected operating point (ResNet50@WebFace600K, TOP3, 0.30)
 
 Six faces out of 571 are scored wrong, and every one of them sits in a group photo:
 
-- **1 × `unknown_as_known`** — `few_people_017_post169192` face_04, a campaign poster whose box
-  is clipped by the top image border (only mouth and chin are inside the frame), matched to
-  אופיר כץ at 0.3128. It clears the threshold by 0.013; the label `unknown` is correct, since
-  too little of the face is visible for anyone to name it.
-- **5 × `known_as_unknown`** — real people the system declined to name. In **3 of the 5 the
-  top-scoring candidate was already the right person** (יוסף חדאד at 0.204, גלעד ארדן at 0.225,
-  בצלאל סמוטריץ' at 0.216); the score simply fell short of 0.30 because the crops are small,
-  blurred, or in steep profile. The other two (משה פסל at 0.174, ישראל כץ at 0.252) scored low
-  *and* ranked a wrong candidate first — but stayed below the threshold, so nothing wrong was
-  ever asserted.
+- **0 × `unknown_as_known`** — no distractor is ever given a name. The highest score any unknown
+  face reaches is 0.2956, below the 0.30 threshold. (For contrast, the poster face in
+  `few_people_017_post169192` — clipped by the top image border, with only mouth and chin inside
+  the frame — is what TOP1 and TOP2 falsely name; TOP3 scores it below the cut.)
+- **6 × `known_as_unknown`** — real people the system declined to name. In **4 of the 6 the
+  top-scoring candidate was already the right person** (בצלאל סמוטריץ' at 0.197, יוסף חדאד at
+  0.198, גלעד ארדן at 0.214, יואב קיש at 0.292); the score simply fell short of 0.30 because the
+  crops are small, blurred, or in steep profile. The other two (משה פסל at 0.167, ישראל כץ at
+  0.251) scored low *and* ranked a wrong candidate first — but stayed below the threshold, so
+  nothing wrong was ever asserted.
 - **0 × `wrong_identity`.**
 
 That last point is the practically important one: when this configuration is unsure, it says
@@ -274,13 +304,14 @@ That last point is the practically important one: when this configuration is uns
 
 1. **Use ResNet50@WebFace600K, not SFace.** It's ~7–8 F1 points ahead at its best operating
    point, and its performance is far less sensitive to the exact strategy chosen (TOP1/TOP2/
-   TOP3/Centroid all land within 0.0002 F1 of each other at 0.30).
+   TOP3/Centroid all land within 0.004 F1 of each other at 0.30).
 2. **Recommended threshold: 0.30 for ResNet**, ~0.45–0.50 for SFace if it must be used.
    Going below these ranges lets in a flood of false identifications (precision collapses);
    going above them starts silently rejecting real matches (recall collapses).
-3. **Strategy choice matters much less than threshold choice** for ResNet — all four strategies
-   peak at 0.30 and are effectively tied there. TOP2 is the highest by a hair (0.9783 vs
-   0.9781) and tolerates one bad reference image per person better than TOP1.
+3. **When F1 ties, pick on error type.** All four ResNet strategies peak at 0.30 within noise of
+   each other, so **TOP3 was selected for reaching zero false accepts** — and preferred over
+   Centroid, which also reaches zero, because 3–5 reference images per person are too few to
+   average into one representative vector.
 4. **Misidentifying a known person as a different known person is rare and avoidable** —
    `wrong_identity` is 0 for both models at every recommended threshold; it only appears when
    the threshold is set well below the optimum.

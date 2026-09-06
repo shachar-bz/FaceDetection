@@ -177,27 +177,27 @@ The best threshold per model and strategy was chosen by highest F1 on the pooled
 | Model | Strategy | Threshold | F1 | Precision | Recall | Accuracy | wrong_identity |
 |---|---|---|---|---|---|---|---|
 | ResNet50@WebFace600K | TOP1 | 0.30 | 0.975 | 0.985 | 0.964 | 0.988 | 0 |
-| **ResNet50@WebFace600K** | **TOP2** | **0.30** | **0.978** | 0.993 | 0.964 | 0.990 | 0 |
-| ResNet50@WebFace600K | TOP3 | 0.30 | 0.978 | 1.000 | 0.957 | 0.990 | 0 |
+| ResNet50@WebFace600K | TOP2 | 0.30 | 0.978 | 0.993 | 0.964 | 0.990 | 0 |
+| **ResNet50@WebFace600K** | **TOP3** | **0.30** | **0.978** | **1.000** | 0.957 | 0.990 | 0 |
 | ResNet50@WebFace600K | Centroid | 0.30 | 0.978 | 1.000 | 0.957 | 0.990 | 0 |
 | SFace | TOP1 | 0.45 | 0.899 | 0.945 | 0.857 | 0.953 | 0 |
 | SFace | TOP2 | 0.45 | 0.903 | 0.983 | 0.836 | 0.956 | 0 |
 | SFace | TOP3 | 0.40 | 0.886 | 0.910 | 0.864 | 0.946 | 0 |
 | SFace | Centroid | 0.50 | 0.898 | 1.000 | 0.814 | 0.955 | 0 |
 
-All four ResNet strategies peak at the same threshold, 0.30, within 0.0002 F1 of each other.
+All four ResNet strategies peak at the same threshold, 0.30, within 0.004 F1 of each other — TOP2, TOP3, and Centroid within 0.0002. Since F1 cannot separate them, the selection was made on the `unknown_as_known` count instead; see [Final Configuration](#5-final-configuration).
 
-### Results — threshold sensitivity (ResNet50@WebFace600K, TOP2, pooled)
+### Results — threshold sensitivity (ResNet50@WebFace600K, TOP3, pooled)
 
 | Threshold | Accuracy | Precision | Recall | F1 | known→unknown | unknown→known |
 |---|---|---|---|---|---|---|
-| 0.20 | 0.828 | 0.587 | 0.986 | 0.736 | 1 | 96 |
-| 0.25 | 0.962 | 0.882 | 0.964 | 0.921 | 4 | 17 |
-| **0.30** | **0.990** | **0.993** | **0.964** | **0.978** | 5 | 1 |
-| 0.35 | 0.979 | 1.000 | 0.914 | 0.955 | 12 | 0 |
-| 0.40 | 0.967 | 1.000 | 0.864 | 0.927 | 19 | 0 |
-| 0.50 | 0.935 | 1.000 | 0.736 | 0.848 | 37 | 0 |
-| 0.60 | 0.869 | 1.000 | 0.464 | 0.634 | 75 | 0 |
+| 0.20 | 0.893 | 0.701 | 0.971 | 0.814 | 3 | 57 |
+| 0.25 | 0.977 | 0.938 | 0.964 | 0.951 | 4 | 8 |
+| **0.30** | **0.990** | **1.000** | **0.957** | **0.978** | 6 | 0 |
+| 0.35 | 0.977 | 1.000 | 0.907 | 0.951 | 13 | 0 |
+| 0.40 | 0.965 | 1.000 | 0.857 | 0.923 | 20 | 0 |
+| 0.50 | 0.926 | 1.000 | 0.700 | 0.824 | 42 | 0 |
+| 0.60 | 0.853 | 1.000 | 0.400 | 0.571 | 84 | 0 |
 
 Every configuration follows this shape: below the optimum, distractors flood in and precision collapses; above it, real matches are silently rejected and recall collapses. SFace needs a threshold roughly 0.15 higher than ResNet to reach its equivalent operating point.
 
@@ -209,7 +209,7 @@ At each configuration's best pooled threshold:
 |---|---|---|---|---|
 | ResNet50@WebFace600K | TOP1 | 0.30 | 1.000 | 0.955 |
 | ResNet50@WebFace600K | TOP2 | 0.30 | 1.000 | 0.962 |
-| ResNet50@WebFace600K | TOP3 | 0.30 | 1.000 | 0.961 |
+| **ResNet50@WebFace600K** | **TOP3** | **0.30** | **1.000** | **0.961** |
 | ResNet50@WebFace600K | Centroid | 0.30 | 1.000 | 0.961 |
 | SFace | TOP1 | 0.45 | 0.942 | 0.863 |
 | SFace | TOP2 | 0.45 | 0.948 | 0.867 |
@@ -228,12 +228,23 @@ The full sweep across all 15 thresholds, both models, and all four strategies is
 |---|---|
 | Face detection | SCRFD-10G-KPS (via InsightFace `buffalo_l`), confidence 0.5, 640×640 input |
 | Face embedding | ResNet50@WebFace600K, 512-d |
-| Matching strategy | TOP2 (mean similarity to a person's 2 closest reference images) |
+| Matching strategy | TOP3 (mean similarity to a person's 3 closest reference images) |
 | Threshold | 0.30 cosine similarity |
 
-ResNet50@WebFace600K leads SFace by 7–8 F1 points and is far less sensitive to the strategy chosen — TOP1, TOP2, TOP3, and Centroid all peak at 0.30 and land within 0.0002 F1 of each other there. TOP2 was taken as the peak of that flat region; it tolerates one bad reference image per person better than TOP1, without needing three good ones like TOP3.
+ResNet50@WebFace600K leads SFace by 7–8 F1 points and is far less sensitive to the strategy chosen — TOP1, TOP2, TOP3, and Centroid all peak at 0.30 and land within 0.004 F1 of each other there (TOP2/TOP3/Centroid within 0.0002). On a 571-face set that spread is one or two faces, so F1 cannot pick a winner and the selection was made on error type instead:
 
-At 0.30 only 6 of the 571 faces are scored wrong — 5 known faces rejected as `unknown`, 1 distractor named — and `wrong_identity` is 0: misnaming one known person as another only appears at thresholds well below the optimum. In 3 of the 5 rejections the top-ranked candidate was already the correct person, just below the threshold, so the failure mode is under-confidence rather than confusion. All 6 errors are in group photos.
+| Strategy @ 0.30 | `unknown_as_known` | `known_as_unknown` | F1 |
+|---|---|---|---|
+| TOP1 | 2 | 5 | 0.975 |
+| TOP2 | 1 | 5 | 0.978 |
+| **TOP3** | **0** | 6 | 0.978 |
+| Centroid | 0 | 6 | 0.978 |
+
+**TOP3 was selected because it produces zero false accepts** — assigning a known identity to someone who is not in the database is the error this system most wants to avoid, since a confidently wrong name is worse than an `unknown` a human can follow up on. Its F1 is effectively tied with TOP2 and Centroid.
+
+TOP3 is preferred over Centroid, which also reaches zero, because **each person in the reference database has only 3–5 images**: a centroid averaged over so few samples is a fragile estimate of someone's appearance, where one atypical photo permanently shifts that person's vector. TOP3 selects the 3 closest reference images per query instead, so an outlier photo is simply not chosen when it does not help. All 234 people have at least 3 images, so TOP3 never falls back to fewer.
+
+At 0.30 only 6 of the 571 faces are scored wrong — all 6 are known faces rejected as `unknown`, no distractor is ever named, and `wrong_identity` is 0. In 4 of the 6 rejections the top-ranked candidate was already the correct person, just below the threshold, so the failure mode is under-confidence rather than confusion. All 6 errors are in group photos.
 
 This configuration is packaged in [pipeline_A_resnet50_webface600k/](pipeline_A_resnet50_webface600k/), where the model, strategy, and threshold are all defined in [face_pipeline.py](pipeline_A_resnet50_webface600k/face_pipeline.py). [pipeline_B_sface/](pipeline_B_sface/) packages the SFace alternative (TOP2 at threshold 0.45) in the same shape, for comparison.
 

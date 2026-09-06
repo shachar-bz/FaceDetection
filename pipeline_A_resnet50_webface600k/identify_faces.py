@@ -1,7 +1,7 @@
 """Identifies who appears in a new image, using the face database built by build_face_database.py.
 
 Detects every face in the given image, embeds it with ResNet50@WebFace600K, matches it against
-the known-people database with the TOP2 strategy, and reports the person's name - or `unknown`
+the known-people database with the TOP3 strategy, and reports the person's name - or `unknown`
 when the best similarity falls below the threshold (0.30, see README.md). Optionally writes a
 copy of the image with the boxes and names drawn on it.
 """

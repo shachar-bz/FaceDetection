@@ -6,8 +6,8 @@ appear in it.
 
 - **Detector:** SCRFD-10GF with 5-point alignment (InsightFace `buffalo_l`)
 - **Embedding model:** ResNet50 trained on WebFace600K (512-d, InsightFace `buffalo_l`)
-- **Matching strategy:** **TOP2** — a person's score is the mean cosine similarity to their
-  2 closest reference images
+- **Matching strategy:** **TOP3** — a person's score is the mean cosine similarity to their
+  3 closest reference images
 - **Decision threshold:** **0.30** — anything below this is reported as `unknown`
 
 This folder is standalone: download only this folder, install its `requirements.txt`, and it
@@ -60,9 +60,9 @@ This writes:
 - `face_database/face_database_manifest.csv` — one row per face that went in (person, source
   image, detection confidence, box), plus any unreadable images
 
-**More reference images per person is better.** TOP2 averages a person's two closest images, so
-give each person at least 2–3 varied photos; a person with a single photo still works (the
-strategy falls back to that one image) but is matched less reliably.
+**More reference images per person is better.** TOP3 averages a person's three closest images,
+so give each person at least 3 varied photos; a person with fewer still works (the strategy
+falls back to however many exist) but is matched less reliably.
 
 ## Step 2 — identify people in a new image
 
@@ -74,7 +74,7 @@ python identify_faces.py path/to/new_photo.jpg --annotated-output out/new_photo_
 Output:
 
 ```
-Model: ResNet50@WebFace600K | strategy: TOP2 | threshold: 0.3
+Model: ResNet50@WebFace600K | strategy: TOP3 | threshold: 0.3
 Detected 3 face(s) in path/to/new_photo.jpg
   face 0: Ada Lovelace                   similarity=0.5821  box=(120.4, 88.1, 210.7, 205.3)  detection_confidence=0.883
   face 1: unknown                        similarity=0.1904  box=(340.2, 96.6, 421.0, 199.8)  detection_confidence=0.851
@@ -109,8 +109,10 @@ Everything is at the top of [face_pipeline.py](face_pipeline.py):
 - `IDENTIFICATION_THRESHOLD` (0.30) — **raise it** to reduce false identifications at the cost
   of missing real matches; **lower it** to catch more real matches at the cost of false ones.
   0.30 is where all four strategies peak (see the sweep below); below 0.25 precision collapses.
-- `MATCHING_STRATEGY_TOP_K` (2) — 1 = a person's single best image, 3 = their 3 closest. For
-  this model the choice barely matters (TOP2/TOP3/Centroid within 0.0002 F1, TOP1 within 0.004).
+- `MATCHING_STRATEGY_TOP_K` (3) — 1 = a person's single best image, 3 = their 3 closest. For
+  this model the F1 barely moves (TOP2/TOP3/Centroid within 0.0002, TOP1 within 0.004), but the
+  strategies differ in *which* errors they make — see "Why TOP3" below. Every person in the
+  reference database has at least 3 images, so TOP3 never falls back to fewer.
 - `MIN_DETECTION_CONFIDENCE` (0.5) — how confident the detector must be that a region is a face.
 
 ---
@@ -146,12 +148,15 @@ the threshold matters and the strategy barely does. `wrong_identity` is **0 at e
 best threshold** — misattributing one known person to another only happens when the threshold is
 set well below the optimum.
 
-| Strategy | Best threshold | F1 | Precision | Recall | Accuracy | wrong_identity |
-|---|---|---|---|---|---|---|
-| TOP1 | 0.30 | 0.975 | 0.985 | 0.964 | 0.988 | 0 |
-| **TOP2 (this pipeline)** | **0.30** | **0.978** | 0.993 | 0.964 | 0.990 | 0 |
-| TOP3 | 0.30 | 0.978 | 1.000 | 0.957 | 0.990 | 0 |
-| Centroid | 0.30 | 0.978 | 1.000 | 0.957 | 0.990 | 0 |
+| Strategy | Best threshold | F1 | Precision | Recall | Accuracy | false accepts | wrong_identity |
+|---|---|---|---|---|---|---|---|
+| TOP1 | 0.30 | 0.975 | 0.985 | 0.964 | 0.988 | 2 | 0 |
+| TOP2 | 0.30 | 0.978 | 0.993 | 0.964 | 0.990 | 1 | 0 |
+| **TOP3 (this pipeline)** | **0.30** | **0.978** | **1.000** | 0.957 | 0.990 | **0** | 0 |
+| Centroid | 0.30 | 0.978 | 1.000 | 0.957 | 0.990 | 0 | 0 |
+
+Since the F1 column cannot separate the top three, the tie is broken on the `false accepts`
+column instead — see [Why TOP3](#why-top3).
 
 Every configuration follows the same shape across the sweep: at **low thresholds** the system
 is too permissive — nearly every known face is found (recall ≈ 1.0) but so are hundreds of
@@ -183,14 +188,14 @@ early, by threshold 0.25–0.30.
 | 0.80 | 0.757 | 1.000 | 0.007 | 0.014 | 1 | 139 | 0 | 0 |
 | 0.85 | 0.755 | 0.000 | 0.000 | 0.000 | 0 | 140 | 0 | 0 |
 
-### TOP2 (pooled) — the strategy this pipeline ships
+### TOP2 (pooled)
 
 | Threshold | Accuracy | Precision | Recall | F1 | correct | known→unknown | unknown→known | wrong_identity |
 |---|---|---|---|---|---|---|---|---|
 | 0.15 | 0.434 | 0.299 | 0.986 | 0.459 | 138 | 0 | 321 | 2 |
 | 0.20 | 0.828 | 0.587 | 0.986 | 0.736 | 138 | 1 | 96 | 1 |
 | 0.25 | 0.962 | 0.882 | 0.964 | 0.921 | 135 | 4 | 17 | 1 |
-| **0.30** | **0.990** | **0.993** | **0.964** | **0.978 ← best (shipped)** | 135 | 5 | 1 | 0 |
+| **0.30** | **0.990** | **0.993** | **0.964** | **0.978 ← best** | 135 | 5 | 1 | 0 |
 | 0.35 | 0.979 | 1.000 | 0.914 | 0.955 | 128 | 12 | 0 | 0 |
 | 0.40 | 0.967 | 1.000 | 0.864 | 0.927 | 121 | 19 | 0 | 0 |
 | 0.45 | 0.953 | 1.000 | 0.807 | 0.893 | 113 | 27 | 0 | 0 |
@@ -203,14 +208,14 @@ early, by threshold 0.25–0.30.
 | 0.80 | 0.755 | 0.000 | 0.000 | 0.000 | 0 | 140 | 0 | 0 |
 | 0.85 | 0.755 | 0.000 | 0.000 | 0.000 | 0 | 140 | 0 | 0 |
 
-### TOP3 (pooled)
+### TOP3 (pooled) — the strategy this pipeline ships
 
 | Threshold | Accuracy | Precision | Recall | F1 | correct | known→unknown | unknown→known | wrong_identity |
 |---|---|---|---|---|---|---|---|---|
 | 0.15 | 0.532 | 0.341 | 0.986 | 0.506 | 138 | 0 | 265 | 2 |
 | 0.20 | 0.893 | 0.701 | 0.971 | 0.814 | 136 | 3 | 57 | 1 |
 | 0.25 | 0.977 | 0.938 | 0.964 | 0.951 | 135 | 4 | 8 | 1 |
-| **0.30** | **0.990** | **1.000** | **0.957** | **0.978 ← best** | 134 | 6 | 0 | 0 |
+| **0.30** | **0.990** | **1.000** | **0.957** | **0.978 ← best (shipped)** | 134 | 6 | 0 | 0 |
 | 0.35 | 0.977 | 1.000 | 0.907 | 0.951 | 127 | 13 | 0 | 0 |
 | 0.40 | 0.965 | 1.000 | 0.857 | 0.923 | 120 | 20 | 0 | 0 |
 | 0.45 | 0.948 | 1.000 | 0.786 | 0.880 | 110 | 30 | 0 | 0 |
@@ -251,20 +256,44 @@ in group photos, where more distractor faces per image means more chances for a 
 | Strategy | Threshold | one_person F1 | few_people F1 |
 |---|---|---|---|
 | TOP1 | 0.30 | 1.000 | 0.955 |
-| **TOP2** | **0.30** | **1.000** | **0.962** |
-| TOP3 | 0.30 | 1.000 | 0.961 |
+| TOP2 | 0.30 | 1.000 | 0.962 |
+| **TOP3** | **0.30** | **1.000** | **0.961** |
 | Centroid | 0.30 | 1.000 | 0.961 |
 
-## Errors at the shipped operating point (TOP2, 0.30)
+## Why TOP3
+
+TOP1, TOP2, TOP3, and Centroid are separated by at most 0.004 F1 at threshold 0.30, which on a
+571-face set is a difference of one or two faces — too small to pick a winner from. The tie is
+broken on **false accepts** (`unknown_as_known`): naming a person who is not in the database at
+all. That is the error this pipeline most wants to avoid, since a wrong name asserted with
+confidence is worse than a `unknown` that a human can follow up on.
+
+| Strategy @ 0.30 | False accepts | Missed known faces | F1 |
+|---|---|---|---|
+| TOP1 | 2 | 5 | 0.975 |
+| TOP2 | 1 | 5 | 0.978 |
+| **TOP3** | **0** | 6 | 0.978 |
+| Centroid | 0 | 6 | 0.978 |
+
+TOP3 and Centroid both reach zero. **TOP3 is preferred over Centroid because every person in the
+reference database has only 3–5 images** — a centroid averaged over so few samples is a fragile
+estimate of what someone looks like, since one atypical photo (unusual lighting, angle, or age)
+shifts the mean for that person permanently. TOP3 instead picks the 3 closest reference images
+per query, so an outlier photo is simply not selected when it does not help.
+
+The cost of the choice is one extra missed known face compared with TOP2 — a face that is
+recognised as `unknown` rather than named. That is the safer direction to err in.
+
+## Errors at the shipped operating point (TOP3, 0.30)
 
 Six of the 571 faces are scored wrong, all of them in group photos:
 
-- **1 × unknown→known** — a campaign poster clipped by the top image border (only mouth and chin
-  inside the frame) matched a known person at 0.3128, just 0.013 over the threshold.
-- **5 × known→unknown** — real people the system declined to name. In **3 of the 5 the
-  top-ranked candidate was already the correct person** (scores 0.204, 0.216, 0.225); the crops
-  are small, blurred, or in steep profile, so the score fell short of 0.30. The other two ranked
-  a wrong candidate first but stayed below the threshold, so no wrong name was ever asserted.
+- **0 × unknown→known** — no distractor was ever given a name. The highest score any unknown
+  face reached was 0.2956, below the 0.30 threshold.
+- **6 × known→unknown** — real people the system declined to name. In **4 of the 6 the
+  top-ranked candidate was already the correct person** (scores 0.198, 0.197, 0.214, 0.292); the
+  crops are small, blurred, or in steep profile, so the score fell short of 0.30. The other two
+  ranked a wrong candidate first but stayed below the threshold, so no wrong name was asserted.
 - **0 × wrong_identity.**
 
 The practical point: when this configuration is unsure it says `unknown` rather than guessing.
@@ -273,9 +302,9 @@ The practical point: when this configuration is unsure it says `unknown` rather 
 
 1. **Threshold 0.30 is the operating point.** Below it, false identifications flood in; above
    it, real matches get silently rejected. All four strategies agree on it.
-2. **Strategy choice barely matters for this model** — TOP2/TOP3/Centroid are within 0.0002 F1,
-   and TOP1 trails by only 0.004. TOP2 is shipped because it has the best pooled F1 and
-   tolerates one weak reference image per person better than TOP1.
+2. **F1 cannot separate the strategies for this model** — TOP2/TOP3/Centroid are within 0.0002,
+   and TOP1 trails by only 0.004. TOP3 is shipped because it reaches zero false accepts and,
+   unlike Centroid, does not depend on averaging a person's 3–5 reference images into one vector.
 3. **Confusing one known person for another is rare and avoidable** — 0 occurrences at the
    recommended threshold.
 4. **Expect group photos to score below solo photos**, whatever threshold you pick — that is a
