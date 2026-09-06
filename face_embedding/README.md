@@ -48,7 +48,7 @@ download step needed for it.
 Expects `--people-root` laid out as `<group>/<person>/<image files>`:
 
 ```
-python face_embedding/build_face_database.py --people-root path/to/people --output-dir results_embeddings
+python face_embedding/build_face_database.py --people-root path/to/people --output-dir results/embeddings
 ```
 
 Writes:

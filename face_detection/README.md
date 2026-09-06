@@ -35,13 +35,12 @@ python downloading_models_scripts/download_scrfd_model.py           # -> models/
 
 ## SCRFD-10G-KPS results
 
-Run into a separate `results_scrfd/` folder (vs. `results/` for the
-MediaPipe variants) since it's a different model with a different accuracy
-report:
+Run into `results/scrfd/` (the MediaPipe variants go to `results/blazeface/`)
+since it's a different model with a different accuracy report:
 
 ```
-python face_detection/detect_scrfd.py --images-root detecting_faces_data --manifest detecting_faces_data/manifest.csv --model models/scrfd_10g_kps.onnx --output-dir results_scrfd
-python face_detection/accuracy_report.py --results-dir results_scrfd --variants scrfd_10g_kps
+python face_detection/detect_scrfd.py --images-root detecting_faces_data --manifest detecting_faces_data/manifest.csv --model models/scrfd_10g_kps.onnx --output-dir results/scrfd
+python face_detection/accuracy_report.py --results-dir results/scrfd --variants scrfd_10g_kps
 ```
 
 At the default 0.5 confidence threshold, SCRFD-10G-KPS clearly outperforms

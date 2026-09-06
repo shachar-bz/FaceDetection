@@ -111,7 +111,7 @@ Reference images were filtered to those containing **exactly one detected face**
 
 "Known" means the face belongs to a person in the reference database; the other 431 are distractors that should be rejected. Each labelled face was paired with a detected face by box overlap (IoU ≥ 0.5); all 571 were matched, so no labelled face was left without an embedding.
 
-Error analysis of an earlier scoring run surfaced five mislabelled faces, which were re-reviewed image-by-image and corrected: four distractors that were in fact known people (one of them confirmed by the source clip's own watermark), and one face labelled with a name whose box contains only the back of a head — no facial pixels, so it was relabelled `unknown`. This moved the split from 137/434 to 140/431. The per-image list is in [results_identification/RESULTS.md](results_identification/RESULTS.md).
+Error analysis of an earlier scoring run surfaced five mislabelled faces, which were re-reviewed image-by-image and corrected: four distractors that were in fact known people (one of them confirmed by the source clip's own watermark), and one face labelled with a name whose box contains only the back of a head — no facial pixels, so it was relabelled `unknown`. This moved the split from 137/434 to 140/431. The per-image list is in [results/identification/RESULTS.md](results/identification/RESULTS.md).
 
 ### Embedding Models
 
@@ -149,7 +149,7 @@ Similarity is cosine similarity between L2-normalized embeddings. Each strategy 
 
 ## 4. Threshold Evaluation
 
-Thresholds from **0.15 to 0.85 in steps of 0.05** were swept, using the same grid for both models and all four strategies. Every model × strategy × threshold × scope combination was scored (360 rows in [results_identification/identification_metrics.csv](results_identification/identification_metrics.csv)).
+Thresholds from **0.15 to 0.85 in steps of 0.05** were swept, using the same grid for both models and all four strategies. Every model × strategy × threshold × scope combination was scored (360 rows in [results/identification/identification_metrics.csv](results/identification/identification_metrics.csv)).
 
 Outcomes tracked per face:
 
@@ -218,7 +218,7 @@ At each configuration's best pooled threshold:
 
 Group photos run 4–10 F1 points below single-person photos for every configuration. ResNet is perfect on `one_person` at 0.30 under all four strategies, so every error it makes is in a group photo.
 
-The full sweep across all 15 thresholds, both models, and all four strategies is in [results_identification/RESULTS.md](results_identification/RESULTS.md).
+The full sweep across all 15 thresholds, both models, and all four strategies is in [results/identification/RESULTS.md](results/identification/RESULTS.md).
 
 ---
 
@@ -269,8 +269,9 @@ This configuration is packaged in [pipeline_A_resnet50_webface600k/](pipeline_A_
 | [face_embedding/](face_embedding/) | Builds the reference embedding database (both models) |
 | [face_identification/](face_identification/) | Evaluation-set embedding extraction and the identification scorer |
 | [downloading_models_scripts/](downloading_models_scripts/) | Model download scripts |
-| `results_blazeface/`, `results_scrfd/` | Detection results per model |
-| `results_embeddings/`, `results_eval_embeddings/` | Reference and evaluation embeddings with manifests |
-| [results_identification/](results_identification/) | Identification metrics and the full write-up |
+| [results/](results/) | All experiment outputs, one folder per stage |
+| `results/blazeface/`, `results/scrfd/` | Detection results per model |
+| `results/embeddings/`, `results/eval_embeddings/` | Reference and evaluation embeddings with manifests (git-ignored — regenerate locally) |
+| [results/identification/](results/identification/) | Identification metrics and the full write-up |
 | [pipeline_A_resnet50_webface600k/](pipeline_A_resnet50_webface600k/) | The final selected configuration, packaged standalone |
 | [pipeline_B_sface/](pipeline_B_sface/) | The SFace alternative, packaged the same way |

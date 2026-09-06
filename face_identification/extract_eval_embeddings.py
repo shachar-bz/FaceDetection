@@ -30,7 +30,7 @@ from face_embedding.build_face_database import (  # noqa: E402
 
 DEFAULT_EVAL_ROOT = Path("real_data")
 DEFAULT_EVAL_GROUPS = ["one_person", "few_people"]
-DEFAULT_OUTPUT_DIR = Path("results_eval_embeddings")
+DEFAULT_OUTPUT_DIR = Path("results/eval_embeddings")
 
 MANIFEST_COLUMNS = [
     "image_id",

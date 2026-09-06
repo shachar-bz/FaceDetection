@@ -15,10 +15,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-DEFAULT_REFERENCE_MANIFEST = Path("results_embeddings/embeddings_manifest.csv")
-DEFAULT_EVAL_MANIFEST = Path("results_eval_embeddings/eval_embeddings_manifest.csv")
+DEFAULT_REFERENCE_MANIFEST = Path("results/embeddings/embeddings_manifest.csv")
+DEFAULT_EVAL_MANIFEST = Path("results/eval_embeddings/eval_embeddings_manifest.csv")
 DEFAULT_GROUND_TRUTH_TABLE = Path("real_data/final_human_reviewed_image_identification_table.csv")
-DEFAULT_OUTPUT_DIR = Path("results_identification")
+DEFAULT_OUTPUT_DIR = Path("results/identification")
 
 # Both models' embeddings live under these keys inside every per-face .npz.
 EMBEDDING_MODEL_KEYS = {

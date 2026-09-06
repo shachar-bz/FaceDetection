@@ -146,7 +146,7 @@ Everything is at the top of [face_pipeline.py](face_pipeline.py):
 - **Ground-truth revision:** five labels were corrected after reviewing the errors of an earlier
   run — four distractors that were really known people, and one name whose box holds only the
   back of a head (relabelled `unknown`). The split moved from 137/434 to 140/431; see
-  [../results_identification/RESULTS.md](../results_identification/RESULTS.md) for the list.
+  [../results/identification/RESULTS.md](../results/identification/RESULTS.md) for the list.
 
 ## Headline
 

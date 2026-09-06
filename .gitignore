@@ -5,6 +5,6 @@ AGENTS.md
 detecting_faces_data
 README_HE.md
 /models
-/results_embeddings
-/results_eval_embeddings
+/results/embeddings
+/results/eval_embeddings
 /politicians_images

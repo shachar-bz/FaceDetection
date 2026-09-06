@@ -20,7 +20,7 @@ BLAZE_FACE_SHORT_RANGE_FILENAME = "blaze_face_short_range.tflite"
 BLAZE_FACE_FULL_RANGE_FILENAME = "blaze_face_full_range.tflite"
 
 # Detection defaults, matching the values the committed results in
-# results_blazeface/ and results_scrfd/ were produced with.
+# results/blazeface/ and results/scrfd/ were produced with.
 DEFAULT_MIN_CONFIDENCE = 0.5
 DEFAULT_SCRFD_INPUT_SIZE = 640
 DEFAULT_SCRFD_NMS_THRESH = 0.4
