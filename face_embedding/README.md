@@ -5,28 +5,43 @@ downstream face matching/tracking.
 
 ## Pipeline (`face_embedding/build_face_database.py`)
 
-1. Run SCRFD-10G-KPS on each image -> per face: bounding box, confidence,
-   5 keypoints (left eye, right eye, nose, left mouth corner, right mouth
-   corner).
-2. Keep only detections at or above `--min-confidence`.
-3. Align: fit a similarity transform (rotation + scale + translation) from
-   the 5 keypoints to InsightFace's standard reference points, and warp to
-   a 112x112 RGB crop. The bounding box itself is discarded here — only the
-   keypoints matter for alignment.
-4. From the same aligned crop, compute two independent, L2-normalized
-   embeddings:
-   - **ResNet50@WebFace600K**, with InsightFace's official ArcFace-style
-     preprocessing (RGB, `(x - 127.5) / 127.5`).
-   - **OpenCV SFace**, with its own model-specific preprocessing (BGR, raw
-     pixel values — SFace's normalization is baked into the ONNX graph).
+Face detection runs **exactly once per image** — via InsightFace's official
+`buffalo_l` pipeline, `FaceAnalysis.get()` (SCRFD-10GF detection + 5-point
+keypoints). That single detection's box/keypoints/confidence then feed two
+independent recognizers, each performing its own official alignment (never a
+crop pre-aligned for the other model):
+
+- **ResNet50@WebFace600K.** Alignment (rotation + scale + translation to
+  InsightFace's standard reference points, 112x112 crop) and recognition
+  happen inside `FaceAnalysis.get()` itself, using its own tested
+  preprocessing. This code never computes that transform or the ResNet blob.
+  Detections below `--min-confidence` are dropped internally (`det_thresh`).
+- **OpenCV SFace.** The same detection's box/keypoints/confidence are
+  adapted into the 15-value `[x, y, w, h, 5x(landmark_x, landmark_y),
+  confidence]` row `cv2.FaceRecognizerSF.alignCrop()` expects, then that
+  recognizer's own `alignCrop()` -> `feature()`. No landmark reordering is
+  needed: OpenCV's `alignCrop` warps to the exact same ArcFace reference
+  points InsightFace uses (verified against OpenCV's own
+  `face_recognize.cpp` source), so SCRFD's native 5-point order (left eye,
+  right eye, nose, left mouth corner, right mouth corner) is already what it
+  wants.
+
+Detecting once (rather than running SCRFD twice and pairing results by
+index or position) means there's no risk of ever pairing embeddings from two
+different faces — both embeddings for a row always come from the same
+detected face.
 
 ## Setup
 
 ```
 pip install -r requirements.txt
-python downloading_models_scripts/download_scrfd_model.py         # -> models/scrfd_10g_kps.onnx
-python downloading_models_scripts/download_recognition_models.py  # -> models/resnet50_webface600k.onnx, models/sface_2021dec.onnx
+python downloading_models_scripts/download_recognition_models.py  # -> models/sface_2021dec.onnx
 ```
+
+The `buffalo_l` pack (SCRFD-10GF detection + ResNet50@WebFace600K
+recognition) is downloaded automatically by `FaceAnalysis` on first run and
+cached under `--insightface-root` (default `~/.insightface`) — no separate
+download step needed for it.
 
 ## Usage
 
