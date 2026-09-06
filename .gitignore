@@ -5,10 +5,6 @@ AGENTS.md
 detecting_faces_data
 README_HE.md
 /models
-/results_blazeface
-/results_scrfd
 /results_embeddings
 /results_eval_embeddings
-/results_identification
 /politicians_images
-/real_data
