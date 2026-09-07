@@ -14,6 +14,7 @@ from face_identity.configuration import (
     DEFAULT_DETECTION_INPUT_SIZE,
     DEFAULT_MIN_DETECTION_CONFIDENCE,
     DEFAULT_SCRFD_NMS_THRESHOLD,
+    resolve_models_directory,
 )
 from face_identity.detection.face_detector import DetectedFace
 
@@ -74,7 +75,7 @@ class InsightFacePackDetector:
 
     def __init__(
         self,
-        models_directory: Path,
+        models_directory: Path | None = None,
         min_detection_confidence: float = DEFAULT_MIN_DETECTION_CONFIDENCE,
         input_size: int = DEFAULT_DETECTION_INPUT_SIZE,
         with_recognition: bool = False,
@@ -85,9 +86,10 @@ class InsightFacePackDetector:
         allowed_modules = ["detection", "recognition"] if with_recognition else ["detection"]
         self.model_pack_name = model_pack_name
         self.with_recognition = with_recognition
+        self.models_directory = resolve_models_directory(models_directory)
         self._face_analysis = FaceAnalysis(
             name=model_pack_name,
-            root=str(models_directory),
+            root=str(self.models_directory),
             allowed_modules=allowed_modules,
             providers=["CPUExecutionProvider"],
         )
