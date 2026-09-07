@@ -28,7 +28,7 @@ All three ran at a confidence threshold of 0.5. Every model is fetched by [face_
 
 ### Test Cases
 
-The dataset is a curated 411-image sample from Open Images V7 and its MIAP subset, described in [detecting_faces_data/README_HE.md](detecting_faces_data/README_HE.md). Each image was visually verified, and the folder is the authoritative label. Candidates whose faces were not clear or usable enough for a face-detection benchmark were dropped during curation, so the people groups are deliberately smaller than the no-face group.
+The published metrics use the 411 successfully available images from a 450-row Open Images V7/MIAP manifest, described in [detecting_faces_data/README_HE.md](detecting_faces_data/README_HE.md). The saved runs preserve all 450 rows and mark the same 39 unavailable inputs as `unreadable`; [accuracy_report.py](experiments/detection_benchmark/accuracy_report.py) excludes error rows before scoring. The resulting evaluated groups are therefore deliberately smaller than the original balanced manifest.
 
 | Group | Images | Contents |
 |---|---|---|
@@ -282,9 +282,9 @@ python build_face_database.py --people-images-root my_people
 python identify_faces.py photo.jpg
 ```
 
-Each folder is 25 files, ~60 KB, and is pinned to its own pipeline — there is no `--pipeline`
-flag to remember and no way to pick the wrong one. The folder's own README covers the image
-layout and the settings you can tune.
+Each folder is 25 files, ~60 KB, and exposes only its own pipeline choice, so its default cannot
+silently select the other model. The folder's own README covers the image layout and the
+settings you can tune.
 
 To fetch one folder without the images and the study, check out just that path:
 
@@ -318,6 +318,21 @@ database and identify a new image:
 ```bash
 python build_face_database.py --people-images-root my_people
 python identify_faces.py photo.jpg --annotated-output labelled.jpg
+```
+
+Every reference image must contain exactly one detected face: the person named by its folder.
+The database builder skips an image with zero or multiple detected faces, prints a warning,
+and records the reason in `face_database_manifest.csv`. This prevents a bystander's face from
+being silently stored under the wrong identity.
+
+You can also identify a directory of your own evaluation images recursively. Directory mode
+writes one row per detected face to `identification_results.csv`; unreadable and no-face
+images remain represented so they do not disappear silently:
+
+```bash
+python identify_faces.py evaluation_images
+python identify_faces.py evaluation_images --results-csv my_results.csv \
+  --annotated-output annotated_images
 ```
 
 Both commands default to pipeline A. Pass `--pipeline b` to either one to use SFace instead;
@@ -355,7 +370,7 @@ to keep model weights outside the repository.
 | [experiments/identification_study/](experiments/identification_study/) | Stage 2: reference and evaluation embeddings, the identification scorer |
 | [pipelines/](pipelines/) | One ready-to-run, self-contained folder per pipeline — what you take to production |
 | [make_pipeline.py](make_pipeline.py) | Regenerates those folders from the library; re-run and commit after changing it |
-| `tests/` | Unit tests for the scoring, matching and metrics code (not tracked; run with `python -m pytest`) |
+| [tests/](tests/) | Unit tests for the pipeline configuration, input handling, matching and metrics code |
 | [pyproject.toml](pyproject.toml), [requirements.txt](requirements.txt) | Packaging and the pinned dependency set |
 
 ### Data (inputs)
@@ -364,7 +379,7 @@ Images are never committed — only the small hand-made label files beside them 
 
 | Path | Contents | In git |
 |---|---|---|
-| `detecting_faces_data/` | The 411-image detection dataset, its manifest, curation audit and Hebrew writeup | no — folder ignored wholesale, labels included |
+| [detecting_faces_data/](detecting_faces_data/) | Detection manifest, curation audit and Hebrew write-up | metadata yes; images and contact sheet no |
 | `evaluation_images/` | 250 real social-media images (`one_person/`, `few_people/`) | images no; `manifest.csv` and `final_human_reviewed_image_identification_table.csv` **yes** |
 | `reference_people/` | Labelled reference photos of the known people, as `<group>/<person>/<images>` | no |
 

@@ -322,4 +322,4 @@ That last point is the practically important one: when this configuration is uns
 ---
 *Generated from `results/identification/identification_metrics.csv` (571 labelled faces: 140
 known / 431 unknown, matched against the full 234-person reference database). See
-`face_identification/evaluate_identification.py` for the scoring implementation.*
+`experiments/identification_study/evaluate_identification.py` for the scoring implementation.*

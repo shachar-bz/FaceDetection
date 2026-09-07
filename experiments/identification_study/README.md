@@ -76,6 +76,24 @@ python -m experiments.identification_study.extract_evaluation_embeddings \
 Same models and same detection pass as step 1, so the two sets of embeddings are directly
 comparable. Boxes are recorded as x1/y1/x2/y2, matching the human-reviewed ground-truth table.
 
+### Using your own evaluation images
+
+For an unlabelled review run, no experiment-specific layout is required; use the packaged
+pipeline directly. It accepts any directory recursively and writes a reviewable CSV:
+
+```bash
+python identify_faces.py path/to/my_evaluation_images --results-csv my_results.csv
+```
+
+To run the full labelled threshold study, put images in `one_person/` and `few_people/` under
+the directory passed to `--eval-root`. Each filename stem is its `image_id`. Supply a
+ground-truth CSV to `evaluate_identification` with columns `image_id` and `people`, where
+`people` is a JSON list of objects containing `face_label`, `person_name`, and `bbox_xyxy`;
+each `bbox_xyxy` is `[x1, y1, x2, y2]`. Use the literal `person_name` value `unknown` for
+people absent from the reference database. The tracked
+`evaluation_images/final_human_reviewed_image_identification_table.csv` is a concrete example.
+Pass your table with `--ground-truth-table`.
+
 ## 3. Threshold sweep
 
 ```bash
