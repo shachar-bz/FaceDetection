@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "face-identity"
+version = "1.0.0"
+description = "Face detection, embedding and closed-set identification against a database of known people."
+requires-python = ">=3.12"
+dependencies = [
+    "insightface==1.0.1",
+    "opencv-contrib-python==5.0.0.93",
+    "numpy==2.5.2",
+    "pandas==3.0.5",
+    "onnxruntime==1.29.0",
+    "scikit-image==0.26.0",
+]
+
+[project.optional-dependencies]
+# BlazeFace is only used by the detection benchmark in experiments/, never by a pipeline.
+benchmark = ["mediapipe==1.0.1"]
+test = ["pytest==8.4.2"]
+
+[project.scripts]
+face-identity-download-models = "face_identity.model_downloads:main"
+
+[tool.setuptools.packages.find]
+include = ["face_identity*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

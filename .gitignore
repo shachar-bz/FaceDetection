@@ -8,3 +8,7 @@ README_HE.md
 /results/embeddings
 /results/eval_embeddings
 /politicians_images
+*.egg-info/
+build/
+dist/
+.pytest_cache/
