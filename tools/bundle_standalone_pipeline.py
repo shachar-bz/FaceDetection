@@ -19,8 +19,11 @@ DEFAULT_BUNDLE_ROOT = REPOSITORY_ROOT / "dist"
 # What a standalone bundle contains, copied verbatim from the repository root.
 BUNDLED_PACKAGE_DIRECTORY = "face_identity"
 BUNDLED_SCRIPTS = ["identify_faces.py", "build_face_database.py"]
-# Compiled caches and the benchmark-only detector are not worth shipping.
 EXCLUDED_FROM_BUNDLE = shutil.ignore_patterns("__pycache__", "*.pyc")
+# The whole library ships, including the BlazeFace detector only the benchmark uses. It stays
+# because the model registry references it, and it costs the bundle nothing: it imports
+# mediapipe inside its constructor, so a bundle that never builds it never needs that package
+# -- which is why mediapipe is absent from the generated requirements.txt.
 
 # The line in the copied configuration.py that decides which pipeline the CLIs use by default.
 DEFAULT_PIPELINE_KEY_PREFIX = "DEFAULT_PIPELINE_KEY = "
