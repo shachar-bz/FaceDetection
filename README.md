@@ -275,7 +275,7 @@ pip install -e .
 python -m face_identity.model_downloads
 ```
 
-That is 28 files, ~165 KB, plus the model weights the last line fetches. A sparse checkout
+That is 28 files, ~90 KB, plus the model weights the last line fetches. A sparse checkout
 always includes the root files, so `face_identity` is the only path you have to name.
 
 ```bash
