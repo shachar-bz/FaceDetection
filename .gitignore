@@ -12,6 +12,5 @@ README_HE.md
 build/
 dist/
 .pytest_cache/
-/dist
 /face_database
 /tests
