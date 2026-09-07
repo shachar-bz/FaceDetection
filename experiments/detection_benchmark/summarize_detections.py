@@ -1,4 +1,4 @@
-"""Turn face_detection/detect.py's raw detection CSVs into accuracy stats.
+"""Turn run_detection_benchmark.py's raw detection CSVs into accuracy stats.
 
 Reports, per model variant:
 - no_person: false-positive rate (any detection on an image with 0 real faces)
@@ -11,6 +11,8 @@ import argparse
 from pathlib import Path
 
 import pandas as pd
+
+from face_identity.detection.detector_registry import BENCHMARK_DETECTOR_NAMES
 
 
 def summarize_variant(df: pd.DataFrame) -> None:
@@ -55,12 +57,14 @@ def summarize_variant(df: pd.DataFrame) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--variants", nargs="+", default=["short_range", "full_range"])
+    parser.add_argument("--detectors", nargs="+", default=BENCHMARK_DETECTOR_NAMES,
+                        choices=BENCHMARK_DETECTOR_NAMES,
+                        help="Which detectors' detections CSVs to score")
     args = parser.parse_args()
 
-    for variant_name in args.variants:
-        csv_path = args.output_dir / f"detections_{variant_name}.csv"
-        print(f"=== {variant_name} ({csv_path.name}) ===")
+    for detector_name in args.detectors:
+        csv_path = args.output_dir / f"detections_{detector_name}.csv"
+        print(f"=== {detector_name} ({csv_path.name}) ===")
         summarize_variant(pd.read_csv(csv_path))
         print()
 

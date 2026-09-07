@@ -21,6 +21,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from face_identity.detection.detector_registry import BENCHMARK_DETECTOR_NAMES
+
 
 def classify(row: pd.Series) -> str:
     group = row["group"]
@@ -61,10 +63,10 @@ def per_group_metrics(df: pd.DataFrame) -> pd.DataFrame:
     return per_group.reindex(["no_person", "one_person", "multiple_people"])
 
 
-def report(df: pd.DataFrame, per_group: pd.DataFrame, variant_name: str) -> None:
+def report(df: pd.DataFrame, per_group: pd.DataFrame, detector_name: str) -> None:
     overall = metrics(df["outcome"])
 
-    print(f"=== {variant_name} ===")
+    print(f"=== {detector_name} ===")
     print(f"  TP={overall['TP']}  TN={overall['TN']}  FP={overall['FP']}  FN={overall['FN']}  (n={len(df)})")
     print(f"  accuracy  = {overall['accuracy']:.1%}")
     print(f"  precision = {overall['precision']:.1%}")
@@ -81,22 +83,24 @@ def report(df: pd.DataFrame, per_group: pd.DataFrame, variant_name: str) -> None
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results-dir", type=Path, required=True,
-                         help="Directory containing detections_<variant>.csv from detect.py")
-    parser.add_argument("--variants", nargs="+", default=["short_range", "full_range"])
+                         help="Directory containing detections_<detector>.csv from run_detection_benchmark.py")
+    parser.add_argument("--detectors", nargs="+", default=BENCHMARK_DETECTOR_NAMES,
+                        choices=BENCHMARK_DETECTOR_NAMES,
+                        help="Which detectors' detections CSVs to score")
     args = parser.parse_args()
 
-    for variant_name in args.variants:
-        csv_path = args.results_dir / f"detections_{variant_name}.csv"
+    for detector_name in args.detectors:
+        csv_path = args.results_dir / f"detections_{detector_name}.csv"
         df = score_variant(pd.read_csv(csv_path))
 
-        out_csv = args.results_dir / f"accuracy_{variant_name}.csv"
+        out_csv = args.results_dir / f"accuracy_{detector_name}.csv"
         df.to_csv(out_csv, index=False)
 
         per_group = per_group_metrics(df)
-        per_group_csv = args.results_dir / f"accuracy_by_group_{variant_name}.csv"
+        per_group_csv = args.results_dir / f"accuracy_by_group_{detector_name}.csv"
         per_group.to_csv(per_group_csv)
 
-        report(df, per_group, variant_name)
+        report(df, per_group, detector_name)
         print(f"  wrote per-image outcomes -> {out_csv}")
         print(f"  wrote per-group metrics -> {per_group_csv}\n")
 

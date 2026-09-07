@@ -1,53 +1,63 @@
-# Face detector evaluation
+# Face detector benchmark
 
-Evaluates face detectors — MediaPipe Face Detector (BlazeFace `short_range`
-and `full_range` variants) and SCRFD-10G-KPS — against the 411-image sample
+Evaluates face detectors — MediaPipe Face Detector (BlazeFace `blazeface_short_range`
+and `blazeface_full_range`) and `scrfd_10g_kps` — against the 411-image sample
 in `detecting_faces_data/`, to pick a model, confidence
 threshold, and crop margin for the face-embedding pipeline.
 
 ## Setup
 
-```
-pip install -r requirements.txt
-python downloading_models_scripts/download_face_detector_models.py  # -> models/*.tflite
-python downloading_models_scripts/download_scrfd_model.py           # -> models/scrfd_10g_kps.onnx
+```bash
+pip install -e ".[benchmark]"
+python -m face_identity.model_downloads --group benchmark
 ```
 
 ## Scripts
 
-- `face_detection/detect.py` — runs both BlazeFace variants over every image
-  in the manifest, writes per-image detection counts/scores/boxes to
-  `<output-dir>/detections_<variant>.csv`.
-- `face_detection/detect_scrfd.py` — same contract as `detect.py`, for the
-  SCRFD-10G-KPS ONNX model; writes `detections_scrfd_10g_kps.csv`.
-- `face_detection/accuracy_report.py` — scores a detections CSV against
-  per-group ground truth (TP/TN/FP/FN, precision/recall/accuracy). Accepts
-  `--variants` to target any set of variant names.
-- `face_detection/summarize.py` — turns a detections CSV into recall /
+Run every script as a module from the repository root, so `face_identity` resolves:
+
+- `run_detection_benchmark.py` — runs any set of detectors over every image in
+  the manifest, writing per-image detection counts/scores/boxes to
+  `<output-dir>/detections_<detector>.csv`. One script for every detector;
+  pick with `--detectors`.
+- `accuracy_report.py` — scores a detections CSV against per-group ground truth
+  (TP/TN/FP/FN, precision/recall/accuracy). Accepts `--detectors` to target any
+  set of detector names.
+- `summarize_detections.py` — turns a detections CSV into recall /
   false-positive stats, broken down by brightness, framing, and orientation.
-- `face_detection/detection_common.py` — helpers shared by the scripts
-  above: the two detector constructors, the square crop-box expansion
-  formula, the BlazeFace model filenames, and the detection defaults.
-- `face_detection/threshold_sweep.py` — re-thresholds a low-confidence
+- `threshold_sweep.py` — re-thresholds a low-confidence
   (`--min-confidence 0.1`) detection run to show the recall vs.
   false-positive trade-off across confidence cutoffs without re-running
   the model.
+- `annotate_detections.py` — saves a copy of every image with one detector's
+  boxes drawn on it, for eyeballing.
 
-## SCRFD-10G-KPS results
+The detectors themselves live in [face_identity/detection/](../../face_identity/detection/);
+this folder only runs and scores them.
 
-Run into `results/scrfd/` (the MediaPipe variants go to `results/blazeface/`)
-since it's a different model with a different accuracy report:
+## Reproducing the results
 
-```
-python face_detection/detect_scrfd.py --images-root detecting_faces_data --manifest detecting_faces_data/manifest.csv --model models/scrfd_10g_kps.onnx --output-dir results/scrfd
-python face_detection/accuracy_report.py --results-dir results/scrfd --variants scrfd_10g_kps
+BlazeFace results go to `results/blazeface/`, SCRFD to `results/scrfd/`:
+
+```bash
+python -m experiments.detection_benchmark.run_detection_benchmark \
+  --images-root detecting_faces_data --manifest detecting_faces_data/manifest.csv \
+  --detectors blazeface_short_range blazeface_full_range --output-dir results/blazeface
+python -m experiments.detection_benchmark.accuracy_report --results-dir results/blazeface \
+  --detectors blazeface_short_range blazeface_full_range
+
+python -m experiments.detection_benchmark.run_detection_benchmark \
+  --images-root detecting_faces_data --manifest detecting_faces_data/manifest.csv \
+  --detectors scrfd_10g_kps --output-dir results/scrfd
+python -m experiments.detection_benchmark.accuracy_report --results-dir results/scrfd \
+  --detectors scrfd_10g_kps
 ```
 
 At the default 0.5 confidence threshold, SCRFD-10G-KPS clearly outperforms
 both BlazeFace variants on this sample: 96.8% accuracy / 100% precision /
-95.0% recall (n=411), vs. `full_range`'s 81.0% accuracy / 99.5% precision /
+95.0% recall (n=411), vs. `blazeface_full_range`'s 81.0% accuracy / 99.5% precision /
 70.5% recall. It also had zero false positives on `no_person` images
-(`full_range` had 1).
+(`blazeface_full_range` had 1).
 
 ## Findings (411-image sample: 150 no_person / 145 one_person / 116 multiple_people)
 

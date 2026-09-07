@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from face_identity.detection.detector_registry import BENCHMARK_DETECTOR_NAMES
+
 
 def counts_at_threshold(scores_json: str, threshold: float) -> int:
     scores = json.loads(scores_json)
@@ -38,13 +40,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--thresholds", type=float, nargs="+", default=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])
-    parser.add_argument("--variants", nargs="+", default=["short_range", "full_range"])
+    parser.add_argument("--detectors", nargs="+", default=BENCHMARK_DETECTOR_NAMES,
+                        choices=BENCHMARK_DETECTOR_NAMES,
+                        help="Which detectors' detections CSVs to score")
     args = parser.parse_args()
 
-    for variant_name in args.variants:
-        csv_path = args.output_dir / f"detections_{variant_name}.csv"
+    for detector_name in args.detectors:
+        csv_path = args.output_dir / f"detections_{detector_name}.csv"
         df = pd.read_csv(csv_path)
-        print(f"=== {variant_name} ===")
+        print(f"=== {detector_name} ===")
         rows = [summarize(df, t) for t in args.thresholds]
         report = pd.DataFrame(rows).set_index("threshold")
         report["no_person_fp_rate"] = report["no_person_fp_rate"].map("{:.1%}".format)

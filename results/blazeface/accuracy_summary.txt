@@ -1,4 +1,4 @@
-=== short_range ===
+=== blazeface_short_range ===
   TP=112  TN=149  FP=1  FN=149  (n=411)
   accuracy  = 63.5%
   precision = 99.1%
@@ -11,10 +11,10 @@ no_person         0.0  149.0  1.0   0.0    99.3%      0.0%    n/a
 one_person       79.0    0.0  0.0  66.0    54.5%    100.0%  54.5%
 multiple_people  33.0    0.0  0.0  83.0    28.4%    100.0%  28.4%
 
-  wrote per-image outcomes -> results\accuracy_short_range.csv
-  wrote per-group metrics -> results\accuracy_by_group_short_range.csv
+  wrote per-image outcomes -> results\blazeface\accuracy_blazeface_short_range.csv
+  wrote per-group metrics -> results\blazeface\accuracy_by_group_blazeface_short_range.csv
 
-=== full_range ===
+=== blazeface_full_range ===
   TP=184  TN=149  FP=1  FN=77  (n=411)
   accuracy  = 81.0%
   precision = 99.5%
@@ -27,6 +27,6 @@ no_person          0.0  149.0  1.0   0.0    99.3%      0.0%    n/a
 one_person       113.0    0.0  0.0  32.0    77.9%    100.0%  77.9%
 multiple_people   71.0    0.0  0.0  45.0    61.2%    100.0%  61.2%
 
-  wrote per-image outcomes -> results\accuracy_full_range.csv
-  wrote per-group metrics -> results\accuracy_by_group_full_range.csv
+  wrote per-image outcomes -> results\blazeface\accuracy_blazeface_full_range.csv
+  wrote per-group metrics -> results\blazeface\accuracy_by_group_blazeface_full_range.csv
 
