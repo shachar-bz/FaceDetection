@@ -13,7 +13,7 @@ from pathlib import Path
 
 from face_identity.configuration import PIPELINE_CONFIGURATIONS, resolve_pipeline_configuration
 
-REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
+REPOSITORY_ROOT = Path(__file__).resolve().parent
 DEFAULT_BUNDLE_ROOT = REPOSITORY_ROOT / "dist"
 
 # What a standalone bundle contains, copied verbatim from the repository root.
@@ -149,14 +149,16 @@ def bundle_pipeline(pipeline_key: str, bundle_root: Path) -> Path:
 def main() -> None:
     """Generates a standalone folder for each requested pipeline."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--pipelines", nargs="+", default=sorted(PIPELINE_CONFIGURATIONS),
-                        choices=sorted(PIPELINE_CONFIGURATIONS),
-                        help="Which pipeline configurations to bundle")
+    # No argparse `choices` here: it would validate the default list as a single value.
+    # resolve_pipeline_configuration rejects an unknown name with a clearer message anyway.
+    parser.add_argument("pipelines", nargs="*", default=None,
+                        help=f"Which pipelines to build, from {sorted(PIPELINE_CONFIGURATIONS)} "
+                             "(default: all of them)")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_BUNDLE_ROOT,
                         help="Where the bundle folders are written")
     arguments = parser.parse_args()
 
-    for pipeline_key in arguments.pipelines:
+    for pipeline_key in arguments.pipelines or sorted(PIPELINE_CONFIGURATIONS):
         bundle_directory = bundle_pipeline(pipeline_key, arguments.output_dir)
         print(f"Bundled pipeline {pipeline_key} -> {bundle_directory}")
 

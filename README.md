@@ -262,6 +262,27 @@ This configuration is `PIPELINE_A_RESNET50_WEBFACE600K` in [face_identity/config
 
 ## Using it
 
+### Take one pipeline and go
+
+```bash
+python make_pipeline.py a      # or: b, or no argument for both
+```
+
+Writes `dist/pipeline_a_resnet50_webface600k/` — a self-contained folder (~130 KB) holding the
+library, both CLIs, its own `requirements.txt` and a README. Copy it anywhere; it needs nothing
+from this repository. Inside it:
+
+```bash
+pip install -r requirements.txt
+python -m face_identity.model_downloads
+python build_face_database.py --people-images-root my_people
+python identify_faces.py photo.jpg
+```
+
+The folder is generated, never hand-edited — rebuild it after changing the library.
+
+### Or run it in place
+
 ```bash
 pip install -e .                                        # the library and the two CLIs
 python -m face_identity.model_downloads                 # weights into models/
@@ -278,16 +299,6 @@ python identify_faces.py photo.jpg --annotated-output labelled.jpg
 Both commands default to pipeline A. Pass `--pipeline b` to either one to use SFace instead;
 each pipeline keeps its own database, and querying one pipeline's database with another is
 refused rather than silently producing nonsense.
-
-To hand the pipeline to someone outside this repository, generate a self-contained folder:
-
-```bash
-python -m tools.bundle_standalone_pipeline --pipelines a
-```
-
-The bundle in `dist/` carries its own copy of the library and defaults to that pipeline with
-no flag. It is generated, not hand-edited — regenerate it after changing the library so a
-handed-off copy can never drift from the code the study validated.
 
 ### Reproducing the study
 
@@ -318,7 +329,7 @@ to keep model weights outside the repository.
 | [identify_faces.py](identify_faces.py), [build_face_database.py](build_face_database.py) | The pipeline CLIs, selected with `--pipeline a\|b` |
 | [experiments/detection_benchmark/](experiments/detection_benchmark/) | Stage 1: detector runners, accuracy report, threshold sweep, annotation |
 | [experiments/identification_study/](experiments/identification_study/) | Stage 2: reference and evaluation embeddings, the identification scorer |
-| [tools/](tools/) | Generates a self-contained pipeline folder for handoff |
+| [make_pipeline.py](make_pipeline.py) | Generates a self-contained folder for one pipeline |
 | `tests/` | Unit tests for the scoring, matching and metrics code (not tracked; run with `python -m pytest`) |
 | [pyproject.toml](pyproject.toml), [requirements.txt](requirements.txt) | Packaging and the pinned dependency set |
 
@@ -341,7 +352,7 @@ Images are never committed — only the small hand-made label files beside them 
 | [results/identification/](results/identification/) | Identification metrics and the full write-up | yes |
 | `models/` | Shared model weights cache (`FACE_IDENTITY_MODELS_DIR` relocates it) | no — re-downloadable |
 | `face_database/` | Databases built by `build_face_database.py`, one folder per pipeline | no |
-| `dist/` | Standalone pipeline bundles from `tools/bundle_standalone_pipeline.py` | no — regenerate |
+| `dist/` | Standalone pipeline folders from `make_pipeline.py` | no — regenerate |
 
 A fresh clone gives you the code, the evaluation set's labels, and every published metric — but
 no images and no weights. Point the scripts at your own images and run
