@@ -1,11 +1,13 @@
-"""Generates a self-contained folder for one pipeline, for handing to someone outside this repo.
+"""Regenerates the ready-to-run pipeline folders under pipelines/, one per configuration.
 
-The recipient gets the library, the two CLIs, a requirements.txt and a README in one directory:
-they install the third-party dependencies and run it, with no need to install this project.
+Each folder holds the library, the two CLIs, a requirements.txt and a README, and depends on
+nothing else in this repository: someone taking pipeline A or B to production copies that one
+folder out, installs its requirements, and runs it. The folders are committed, so they are
+there for anyone who clones the repository -- no generation step on their side.
 
-The bundle is generated, never hand-edited -- re-run this after changing the library and the
-copy is regenerated from it, which is what keeps a handed-off pipeline from drifting away from
-the code the study actually validated.
+They are generated, never hand-edited. Re-run this after changing anything in face_identity/
+or the two CLIs, and commit the result, so a folder in production is never running code the
+study did not validate.
 """
 import argparse
 import shutil
@@ -14,9 +16,9 @@ from pathlib import Path
 from face_identity.configuration import PIPELINE_CONFIGURATIONS, resolve_pipeline_configuration
 
 REPOSITORY_ROOT = Path(__file__).resolve().parent
-DEFAULT_BUNDLE_ROOT = REPOSITORY_ROOT / "dist"
+DEFAULT_BUNDLE_ROOT = REPOSITORY_ROOT / "pipelines"
 
-# What a standalone bundle contains, copied verbatim from the repository root.
+# What a pipeline folder contains, copied verbatim from the repository root.
 BUNDLED_PACKAGE_DIRECTORY = "face_identity"
 BUNDLED_SCRIPTS = ["identify_faces.py", "build_face_database.py"]
 EXCLUDED_FROM_BUNDLE = shutil.ignore_patterns("__pycache__", "*.pyc")
