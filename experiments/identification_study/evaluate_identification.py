@@ -24,7 +24,7 @@ from face_identity.matching.matching_strategies import MATCHING_STRATEGIES, scor
 
 DEFAULT_REFERENCE_MANIFEST = Path("results/embeddings/embeddings_manifest.csv")
 DEFAULT_EVAL_MANIFEST = Path("results/eval_embeddings/eval_embeddings_manifest.csv")
-DEFAULT_GROUND_TRUTH_TABLE = Path("real_data/final_human_reviewed_image_identification_table.csv")
+DEFAULT_GROUND_TRUTH_TABLE = Path("evaluation_images/final_human_reviewed_image_identification_table.csv")
 DEFAULT_OUTPUT_DIR = Path("results/identification")
 METRICS_FILENAME = "identification_metrics.csv"
 

@@ -7,7 +7,7 @@ README_HE.md
 /models
 /results/embeddings
 /results/eval_embeddings
-/politicians_images
+/reference_people
 *.egg-info/
 build/
 dist/

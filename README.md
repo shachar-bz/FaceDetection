@@ -101,7 +101,7 @@ Reference images were filtered to those containing **exactly one detected face**
 
 ### Evaluation Set
 
-571 human-reviewed faces across 250 real social-media images from [real_data/](real_data/) — Facebook, Instagram, X, and TikTok (128 still images, 122 video frames).
+571 human-reviewed faces across 250 real social-media images from [evaluation_images/](evaluation_images/) — Facebook, Instagram, X, and TikTok (128 still images, 122 video frames).
 
 | Scope | Images | Faces | Known | Unknown |
 |---|---|---|---|---|

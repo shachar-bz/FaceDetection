@@ -22,7 +22,7 @@ from face_identity.configuration import (
 )
 from face_identity.image_io import discover_images_in_groups, read_image_bgr
 
-DEFAULT_EVAL_ROOT = Path("real_data")
+DEFAULT_EVAL_ROOT = Path("evaluation_images")
 DEFAULT_EVAL_GROUPS = ["one_person", "few_people"]
 DEFAULT_OUTPUT_DIR = Path("results/eval_embeddings")
 MANIFEST_FILENAME = "eval_embeddings_manifest.csv"

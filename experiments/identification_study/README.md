@@ -53,7 +53,7 @@ Expects `--people-root` laid out as `<group>/<person>/<image files>`:
 
 ```bash
 python -m experiments.identification_study.build_reference_embeddings \
-  --people-root politicians_images --output-dir results/embeddings
+  --people-root reference_people --output-dir results/embeddings
 ```
 
 Writes:
@@ -70,7 +70,7 @@ everything downstream, so a rebuild never has to start from an empty folder.
 
 ```bash
 python -m experiments.identification_study.extract_evaluation_embeddings \
-  --eval-root real_data --output-dir results/eval_embeddings
+  --eval-root evaluation_images --output-dir results/eval_embeddings
 ```
 
 Same models and same detection pass as step 1, so the two sets of embeddings are directly
