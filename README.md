@@ -310,6 +310,8 @@ to keep model weights outside the repository.
 
 ## Repository Layout
 
+### Code
+
 | Path | Contents |
 |---|---|
 | [face_identity/](face_identity/) | The library: configuration, detectors, embedders, matching, model downloads |
@@ -317,13 +319,33 @@ to keep model weights outside the repository.
 | [experiments/detection_benchmark/](experiments/detection_benchmark/) | Stage 1: detector runners, accuracy report, threshold sweep, annotation |
 | [experiments/identification_study/](experiments/identification_study/) | Stage 2: reference and evaluation embeddings, the identification scorer |
 | [tools/](tools/) | Generates a self-contained pipeline folder for handoff |
-| [tests/](tests/) | Unit tests for the scoring, matching and metrics code |
-| [detecting_faces_data/](detecting_faces_data/) | 411-image detection dataset, manifest, and curation audit |
-| [results/](results/) | All experiment outputs, one folder per stage |
-| `results/blazeface/`, `results/scrfd/` | Detection results per model |
-| `results/embeddings/`, `results/eval_embeddings/` | Reference and evaluation embeddings with manifests (git-ignored — regenerate locally) |
-| [results/identification/](results/identification/) | Identification metrics and the full write-up |
-| `models/` | Shared model weights cache (git-ignored — re-downloadable) |
+| `tests/` | Unit tests for the scoring, matching and metrics code (not tracked; run with `python -m pytest`) |
+| [pyproject.toml](pyproject.toml), [requirements.txt](requirements.txt) | Packaging and the pinned dependency set |
+
+### Data (inputs)
+
+Images are never committed — only the small hand-made label files beside them are.
+
+| Path | Contents | In git |
+|---|---|---|
+| `detecting_faces_data/` | The 411-image detection dataset, its manifest, curation audit and Hebrew writeup | no — folder ignored wholesale, labels included |
+| `evaluation_images/` | 250 real social-media images (`one_person/`, `few_people/`) | images no; `manifest.csv` and `final_human_reviewed_image_identification_table.csv` **yes** |
+| `reference_people/` | Labelled reference photos of the known people, as `<group>/<person>/<images>` | no |
+
+### Outputs
+
+| Path | Contents | In git |
+|---|---|---|
+| `results/blazeface/`, `results/scrfd/` | Detection results per model | accuracy reports yes; per-image detections no |
+| `results/embeddings/`, `results/eval_embeddings/` | Reference and evaluation embeddings with their manifests | no — regenerate locally |
+| [results/identification/](results/identification/) | Identification metrics and the full write-up | yes |
+| `models/` | Shared model weights cache (`FACE_IDENTITY_MODELS_DIR` relocates it) | no — re-downloadable |
+| `face_database/` | Databases built by `build_face_database.py`, one folder per pipeline | no |
+| `dist/` | Standalone pipeline bundles from `tools/bundle_standalone_pipeline.py` | no — regenerate |
+
+A fresh clone gives you the code, the evaluation set's labels, and every published metric — but
+no images and no weights. Point the scripts at your own images and run
+`python -m face_identity.model_downloads` to fill in the rest.
 
 ### How the pieces depend on each other
 
