@@ -262,15 +262,40 @@ This configuration is `PIPELINE_A_RESNET50_WEBFACE600K` in [face_identity/config
 
 ## Using it
 
-### Take one pipeline and go
+### Download only one pipeline
+
+To run a pipeline without the study, fetch just the library and the two CLIs — no datasets, no
+experiments, no results:
+
+```bash
+git clone --depth 1 --sparse https://github.com/shachar-bz/FaceDetection.git faceid
+cd faceid
+git sparse-checkout set face_identity
+pip install -e .
+python -m face_identity.model_downloads
+```
+
+That is 28 files, ~165 KB, plus the model weights the last line fetches. A sparse checkout
+always includes the root files, so `face_identity` is the only path you have to name.
+
+```bash
+python build_face_database.py --people-images-root my_people
+python identify_faces.py photo.jpg
+```
+
+Pipeline A (ResNet50@WebFace600K, the selected configuration) is the default. Add
+`--pipeline b` to either command for the SFace alternative. Use `pip install -e .` rather than
+`requirements.txt` — the latter also pulls mediapipe and pytest, which only the study needs.
+
+### Or generate a standalone folder
 
 ```bash
 python make_pipeline.py a      # or: b, or no argument for both
 ```
 
-Writes `dist/pipeline_a_resnet50_webface600k/` — a self-contained folder (~130 KB) holding the
-library, both CLIs, its own `requirements.txt` and a README. Copy it anywhere; it needs nothing
-from this repository. Inside it:
+If you already have the repository and want a copy to hand to someone else, this writes
+`dist/pipeline_a_resnet50_webface600k/` — a self-contained folder (~130 KB) with the library,
+both CLIs, its own `requirements.txt` and a README. It needs nothing from this repository:
 
 ```bash
 pip install -r requirements.txt
