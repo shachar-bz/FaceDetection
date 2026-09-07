@@ -5,6 +5,10 @@ embedding together with the name of the person it belongs to. The result is a si
 face_database.npz that identify_faces.py matches new images against, plus a CSV manifest
 listing every face that went into it.
 
+One reference image must contain exactly one detected face. An image with zero or multiple
+faces is skipped with a warning and recorded in the manifest, so a bystander's face can never
+be silently assigned the folder's identity.
+
 The database is specific to the pipeline that built it, because embeddings from different
 models are not comparable. Each pipeline therefore writes to its own subfolder, and the model
 name is recorded inside the .npz so querying it with the wrong pipeline fails loudly.
@@ -17,6 +21,7 @@ name is recorded inside the .npz so querying it with the wrong pipeline fails lo
     here unless the user explicitly asks for it.
 """
 import argparse
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -36,6 +41,7 @@ from face_identity.matching.face_database import save_face_database
 # with no arguments. --people-images-root overrides it. Expected layout -- the folder directly
 # containing an image names the person:
 #     <PEOPLE_IMAGES_ROOT>/<person name>/<image files>
+# Every image must show that person alone and yield exactly one detected face.
 # A deeper grouping layout also works, since only the immediate parent folder names the person:
 #     <PEOPLE_IMAGES_ROOT>/<group>/<person name>/<image files>
 PEOPLE_IMAGES_ROOT = Path("PUT/THE/PATH/TO/YOUR/PEOPLE/IMAGES/HERE")
@@ -73,6 +79,25 @@ def build_manifest_row(person_image, face_index: int, face) -> dict:
     }
 
 
+def build_error_manifest_row(person_image, error: str) -> dict:
+    """Describes a reference image that was skipped without storing an embedding."""
+    return {column: "" for column in MANIFEST_COLUMNS} | {
+        "person": person_image.person,
+        "group": person_image.group,
+        "relative_path": str(person_image.relative_path),
+        "error": error,
+    }
+
+
+def reference_face_count_error(detected_face_count: int) -> str | None:
+    """Returns why a reference image must be skipped, or None when it has exactly one face."""
+    if detected_face_count == 0:
+        return "no_face_detected"
+    if detected_face_count > 1:
+        return f"multiple_faces_detected:{detected_face_count}"
+    return None
+
+
 def main() -> None:
     """Embeds every labelled reference image and writes the face database and its manifest."""
     parser = argparse.ArgumentParser(description=__doc__,
@@ -104,37 +129,51 @@ def main() -> None:
     person_name_per_row: list[str] = []
     embeddings: list[np.ndarray] = []
     manifest_rows: list[dict] = []
+    skipped_image_count = 0
 
     with FaceRecognitionPipeline(configuration, arguments.models_dir) as pipeline:
         for person_image in person_images:
             image_bgr = read_image_bgr(person_image.path)
             if image_bgr is None:
-                manifest_rows.append({column: "" for column in MANIFEST_COLUMNS} | {
-                    "person": person_image.person,
-                    "group": person_image.group,
-                    "relative_path": str(person_image.relative_path),
-                    "error": "unreadable",
-                })
+                skipped_image_count += 1
+                manifest_rows.append(build_error_manifest_row(person_image, "unreadable"))
+                print(f"WARNING: skipping unreadable reference image: {person_image.path}", file=sys.stderr)
                 continue
 
-            for face_index, face in enumerate(pipeline.detect_and_embed_faces(image_bgr)):
-                person_name_per_row.append(person_image.person)
-                embeddings.append(face.embedding)
-                manifest_rows.append(build_manifest_row(person_image, face_index, face))
+            detected_faces = pipeline.detect_and_embed_faces(image_bgr)
+            face_count_error = reference_face_count_error(len(detected_faces))
+            if face_count_error is not None:
+                skipped_image_count += 1
+                manifest_rows.append(build_error_manifest_row(person_image, face_count_error))
+                print(
+                    f"WARNING: skipping reference image {person_image.path}: expected exactly "
+                    f"one detected face, found {len(detected_faces)}",
+                    file=sys.stderr,
+                )
+                continue
+
+            [face] = detected_faces
+            person_name_per_row.append(person_image.person)
+            embeddings.append(face.embedding)
+            manifest_rows.append(build_manifest_row(person_image, 0, face))
+
+    manifest = pd.DataFrame(manifest_rows, columns=MANIFEST_COLUMNS)
+    output_directory.mkdir(parents=True, exist_ok=True)
+    manifest_path = output_directory / FACE_DATABASE_MANIFEST_FILENAME
+    manifest.to_csv(manifest_path, index=False)
 
     if not embeddings:
-        raise SystemExit("No faces were detected - nothing to write.")
+        raise SystemExit(
+            f"No valid single-face reference images were found - no database was written.\n"
+            f"Manifest -> {manifest_path}"
+        )
 
     database_path = save_face_database(
         output_directory, person_name_per_row, np.stack(embeddings), configuration.embedding_model_name
     )
-    manifest = pd.DataFrame(manifest_rows, columns=MANIFEST_COLUMNS)
-    manifest_path = output_directory / FACE_DATABASE_MANIFEST_FILENAME
-    manifest.to_csv(manifest_path, index=False)
 
-    error_count = int((manifest["error"] != "").sum())
     print(f"Wrote {len(embeddings)} face embeddings for {len(set(person_name_per_row))} people "
-          f"({error_count} unreadable images) -> {database_path}")
+          f"({skipped_image_count} skipped images) -> {database_path}")
     print(f"Manifest -> {manifest_path}")
 
 
