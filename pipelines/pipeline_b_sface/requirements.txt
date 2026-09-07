@@ -1,6 +1,6 @@
 # Dependencies for the pipeline_b_sface standalone bundle.
 insightface==1.0.1               # SCRFD-10GF detection and its 5 facial keypoints
-opencv-contrib-python==5.0.0.93  # image IO, annotation drawing, and the SFace recognizer
+opencv-python==5.0.0.93          # image IO, annotation drawing, and the SFace recognizer
 numpy==2.5.2
 pandas==3.0.5                    # database manifest CSV
 

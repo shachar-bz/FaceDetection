@@ -3,7 +3,7 @@
 
 # Direct dependencies of the face_identity library and the pipelines.
 insightface==1.0.1               # SCRFD detection + 5-point alignment + ResNet50@WebFace600K
-opencv-contrib-python==5.0.0.93  # image IO, annotation, and the SFace recognizer (contrib build)
+opencv-python==5.0.0.93          # image IO, annotation, and the SFace recognizer
 numpy==2.5.2
 pandas==3.0.5
 

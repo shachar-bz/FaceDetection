@@ -27,6 +27,9 @@ my_people/
 ```
 
 Three to five clear, varied photos per person works well.
+Each reference image must contain exactly one detected face: the person named by its folder.
+Images with zero faces or multiple faces are skipped with a warning and recorded in the
+database manifest, preventing another person's face from being stored under the wrong name.
 
 ```bash
 python build_face_database.py --people-images-root my_people
@@ -37,6 +40,16 @@ python build_face_database.py --people-images-root my_people
 ```bash
 python identify_faces.py path/to/photo.jpg
 python identify_faces.py path/to/photo.jpg --annotated-output labelled.jpg
+```
+
+To process your own folder of evaluation images recursively, pass the folder instead of one
+file. This writes one row per detected face to `identification_results.csv`; unreadable and
+no-face images are retained as rows so none disappear silently:
+
+```bash
+python identify_faces.py evaluation_images
+python identify_faces.py evaluation_images --results-csv my_results.csv \
+  --annotated-output annotated_images
 ```
 
 ## Configuration

@@ -29,11 +29,21 @@ EXCLUDED_FROM_BUNDLE = shutil.ignore_patterns("__pycache__", "*.pyc")
 
 # The line in the copied configuration.py that decides which pipeline the CLIs use by default.
 DEFAULT_PIPELINE_KEY_PREFIX = "DEFAULT_PIPELINE_KEY = "
+PIPELINE_CONFIGURATIONS_START = "PIPELINE_CONFIGURATIONS = {"
+PIPELINE_CONSTANT_NAMES = {
+    "a": "PIPELINE_A_RESNET50_WEBFACE600K",
+    "b": "PIPELINE_B_SFACE",
+}
+PIPELINE_DOWNLOADABLE_MODEL_NAMES = {
+    "a": [],
+    "b": ["sface"],
+}
+PIPELINE_MODEL_NAMES_PREFIX = "PIPELINE_MODEL_NAMES = "
 
 REQUIREMENTS_TEMPLATE = """\
 # Dependencies for the {pipeline_name} standalone bundle.
 insightface==1.0.1               # SCRFD-10GF detection and its 5 facial keypoints
-opencv-contrib-python==5.0.0.93  # image IO, annotation drawing, and the SFace recognizer
+opencv-python==5.0.0.93          # image IO, annotation drawing, and the SFace recognizer
 numpy==2.5.2
 pandas==3.0.5                    # database manifest CSV
 
@@ -73,6 +83,9 @@ my_people/
 ```
 
 Three to five clear, varied photos per person works well.
+Each reference image must contain exactly one detected face: the person named by its folder.
+Images with zero faces or multiple faces are skipped with a warning and recorded in the
+database manifest, preventing another person's face from being stored under the wrong name.
 
 ```bash
 python build_face_database.py --people-images-root my_people
@@ -83,6 +96,16 @@ python build_face_database.py --people-images-root my_people
 ```bash
 python identify_faces.py path/to/photo.jpg
 python identify_faces.py path/to/photo.jpg --annotated-output labelled.jpg
+```
+
+To process your own folder of evaluation images recursively, pass the folder instead of one
+file. This writes one row per detected face to `identification_results.csv`; unreadable and
+no-face images are retained as rows so none disappear silently:
+
+```bash
+python identify_faces.py evaluation_images
+python identify_faces.py evaluation_images --results-csv my_results.csv \\
+  --annotated-output annotated_images
 ```
 
 ## Configuration
@@ -102,15 +125,49 @@ does the reverse.
 """
 
 
-def set_default_pipeline(configuration_path: Path, pipeline_key: str) -> None:
-    """Pins the bundled copy of configuration.py to the pipeline this bundle is for."""
+def pin_pipeline_configuration(configuration_path: Path, pipeline_key: str) -> None:
+    """Limits a bundled configuration module to its one selected pipeline."""
     lines = configuration_path.read_text(encoding="utf-8").splitlines(keepends=True)
+    default_key_was_replaced = False
     for line_index, line in enumerate(lines):
         if line.startswith(DEFAULT_PIPELINE_KEY_PREFIX):
             lines[line_index] = f'{DEFAULT_PIPELINE_KEY_PREFIX}"{pipeline_key}"\n'
-            configuration_path.write_text("".join(lines), encoding="utf-8")
+            default_key_was_replaced = True
+            break
+    if not default_key_was_replaced:
+        raise ValueError(f"No {DEFAULT_PIPELINE_KEY_PREFIX!r} line found in {configuration_path}")
+
+    try:
+        configurations_start_index = next(
+            index for index, line in enumerate(lines) if line.rstrip() == PIPELINE_CONFIGURATIONS_START
+        )
+        configurations_end_index = next(
+            index
+            for index in range(configurations_start_index + 1, len(lines))
+            if lines[index].rstrip() == "}"
+        )
+    except StopIteration:
+        raise ValueError(f"Could not find the pipeline configuration mapping in {configuration_path}") from None
+
+    selected_constant_name = PIPELINE_CONSTANT_NAMES[pipeline_key]
+    lines[configurations_start_index:configurations_end_index + 1] = [
+        f"{PIPELINE_CONFIGURATIONS_START}\n",
+        f'    "{pipeline_key}": {selected_constant_name},\n',
+        "}\n",
+    ]
+    configuration_path.write_text("".join(lines), encoding="utf-8")
+
+
+def pin_pipeline_model_downloads(model_downloads_path: Path, pipeline_key: str) -> None:
+    """Limits a bundle's explicit model downloads to the weights its selected pipeline uses."""
+    lines = model_downloads_path.read_text(encoding="utf-8").splitlines(keepends=True)
+    for line_index, line in enumerate(lines):
+        if line.startswith(PIPELINE_MODEL_NAMES_PREFIX):
+            model_names = PIPELINE_DOWNLOADABLE_MODEL_NAMES[pipeline_key]
+            lines[line_index] = f"{PIPELINE_MODEL_NAMES_PREFIX}{model_names!r}\n"
+            model_downloads_path.write_text("".join(lines), encoding="utf-8")
             return
-    raise ValueError(f"No {DEFAULT_PIPELINE_KEY_PREFIX!r} line found in {configuration_path}")
+    raise ValueError(f"No {PIPELINE_MODEL_NAMES_PREFIX!r} line found in {model_downloads_path}")
 
 
 def bundle_pipeline(pipeline_key: str, bundle_root: Path) -> Path:
@@ -129,7 +186,9 @@ def bundle_pipeline(pipeline_key: str, bundle_root: Path) -> Path:
     for script_name in BUNDLED_SCRIPTS:
         shutil.copy2(REPOSITORY_ROOT / script_name, bundle_directory / script_name)
 
-    set_default_pipeline(bundle_directory / BUNDLED_PACKAGE_DIRECTORY / "configuration.py", pipeline_key)
+    bundled_package_directory = bundle_directory / BUNDLED_PACKAGE_DIRECTORY
+    pin_pipeline_configuration(bundled_package_directory / "configuration.py", pipeline_key)
+    pin_pipeline_model_downloads(bundled_package_directory / "model_downloads.py", pipeline_key)
 
     (bundle_directory / "requirements.txt").write_text(
         REQUIREMENTS_TEMPLATE.format(pipeline_name=configuration.name), encoding="utf-8")

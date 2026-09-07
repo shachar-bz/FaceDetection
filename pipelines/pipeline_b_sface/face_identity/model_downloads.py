@@ -66,7 +66,7 @@ DOWNLOADABLE_MODELS = {
 
 # What each caller needs: the pipelines only need SFace on top of the auto-downloaded pack,
 # while the detection benchmark needs the standalone detectors it compares.
-PIPELINE_MODEL_NAMES = ["sface"]
+PIPELINE_MODEL_NAMES = ['sface']
 BENCHMARK_MODEL_NAMES = ["scrfd_10g_kps", "blazeface_short_range", "blazeface_full_range"]
 MODEL_GROUPS = {
     "pipelines": PIPELINE_MODEL_NAMES,
