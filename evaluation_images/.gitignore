@@ -1,4 +1,6 @@
-# Bulk evaluation images (250 files, ~37 MB) stay out of git.
-# The label CSVs beside them are the human-reviewed work and stay tracked.
-/few_people
-/one_person
+# Evaluation images stay local. Label/result CSVs and this file remain trackable.
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.bmp
+**/*.webp

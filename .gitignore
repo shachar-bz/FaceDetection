@@ -2,8 +2,10 @@
 __pycache__
 CLAUDE.md
 AGENTS.md
-detecting_faces_data
-README_HE.md
+# Keep the detection images out of Git, but publish their manifest, curation audit,
+# and dataset documentation so the committed experiment results remain inspectable.
+/detecting_faces_data/images/
+/detecting_faces_data/contact_sheet.jpg
 /models
 /results/embeddings
 /results/eval_embeddings
@@ -13,4 +15,3 @@ build/
 dist/
 .pytest_cache/
 /face_database
-/tests

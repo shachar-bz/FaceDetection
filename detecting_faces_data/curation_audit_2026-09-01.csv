@@ -1,0 +1,168 @@
+﻿action,image_id,old_group,new_group,reason
+removed_from_dataset,1c8402fd2ae24567,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,339b6ffa373c3368,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,4434db44b6d3a4a2,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,51e5e3d7530ae9fd,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,750f9c0fb56ca256,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,db2dfb8949314932,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,db45c6c81e806332,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,06e21b6cfab07c72,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,22dfc0f39bdd0be7,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,24dcc62a2d50345a,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,2a3a775eed5a6db8,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,2ab61064982a1aa6,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,2e9721f274303090,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,3d391430a4a022c0,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,452501dd4c22e09d,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,4cf6c98169232130,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,53d5ddce9061ccbb,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,5573d8a084ba4771,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,656648144cee1829,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,6f058ff1524a7882,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,705cd0f2472a5424,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,72f296d97e04673c,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,7ad997675bbf6870,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,81e121f57c33e926,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,8c467ff3c4b0fb4e,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,91886ebe7b3d6bed,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,948025ce1a91ed22,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,9a4d00c5ba8bf9c8,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,aad2063d7bd3e2e2,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,b1dd6dc11bd2ace3,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,b46de73fbd9ddba2,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,b7b8279ee5925bbc,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,ce62a7a046760d75,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,da141ae39195c141,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,daac3a6c64a79bea,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,df4939b68bc85f56,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,e0da23833195eede,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,e6be98091f60f510,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,eaf486938b0cd73b,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,58bab6d9028ddef5,one_person,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,013b99371484d3d5,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,0cc3638b79519c33,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,0e0b0918789235b8,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,10e694bbca38cf3f,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,28931759ca82fc43,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,2c96565a49ec903c,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,3e7d95d9fd61b760,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,48abd1db27d7de96,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,4f95a066b951e3f3,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,572775594ce0a97e,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,5b2e422c926f1e57,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,5fcd6bb8005ce3ae,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,697a23a317599abb,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,6cbe597bb8966449,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,78e8109e598ecac5,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,79445a6e49ee53b9,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,81be0b735c57cb7e,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,81eb3a8a9e740b6b,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,8255bcf627e2382e,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,838e2e43f4f7f8d8,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,86b4c5e790b1122c,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,97e37ec091a2f6fe,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,9e98e64ded3c0518,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,a3812eb250221255,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,a7cfbc86b2e11374,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,bd2637bcbe84c55e,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,c7c3695d67216457,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,ce114649741dcc26,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,cf660e8310264373,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,da046aa4e3a9b0c9,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,da6cdb1b1d3aaeb8,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,db2ea678c5c835ee,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,dd183385210d6310,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,e1d466120477e143,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,e5b639c093864052,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,f8b3a71b25b660dd,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,fad93c74bcb1c396,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,2c0dc013d7bc94c0,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,7b1d11503ee800fa,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,af613bd32a6ad510,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,d3eabb0381d8eee5,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,d907adce81ea1894,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+removed_from_dataset,e23c0361ed8134d4,multiple_people,,wrong class or no sufficiently visible human face for the face-detection set
+moved,6a6881aefff9ad58,multiple_people,one_person,one visible person; the other visible fragment is an isolated arm
+added_replacement,c79a52622d1083ce,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,a5cda01d6f90e438,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,1313a4add388424c,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,90587cd2a48e96d9,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,85ab9bd71a069616,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,45a57476bc5ff4a8,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,4445677443b3aa6f,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,3da013e3a4a6ff71,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,c49e5114a349e7f3,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,4d60d1c103e49fa4,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,a670c7bde1b25fbe,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,229e5a503233b470,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,6c9c687eae7da796,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,c54d4b664c668468,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,e73194258b729245,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,822f20d881eebeb9,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,cb9f5591bdbcc137,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,6ea661a84d5320b5,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,b5e808fd6164cd50,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,9509c75655318762,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,901494c5d3ac911f,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,ffe36e4c06a8add6,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,2bcc5062d0f8e0c1,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,72b1ee7308be7e9c,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,de3a1770a5080306,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,964301aa6ffb97c0,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,d1a995e53123f606,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,d1c01a582bcefb27,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,f54cecf49c0397f5,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,e07438cdd4d9165a,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,c15a26c195af52a1,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,d8499b4715df16c6,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,bb47870d8888b573,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,b1d4c65a05fb7095,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,863fdfd7501e00a4,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,965ae43e3a57411e,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,4ee7201f6d87b151,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,be08b7bb9582146e,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,b5951f9b9138f429,,one_person,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,d819685832a0e19b,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,62abaccc5fe7a452,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,12b999f7e3b75de1,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,0671f11d8258d167,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,bf5d9fdef70c9334,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,066571234281ca95,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,416573cfa754789f,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,7efe316eff8c93b1,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,5c9645ab78b0c0b4,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,711f4bda960e3983,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,b82be70bdaac5199,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,39511f7a57d98423,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,24ecee17e7b53fab,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,ca11ed43e49ca797,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,c52a410e3231122b,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,0d16c88ec322340f,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,01fe16fca259a75a,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,25b4dd6102799d9e,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,450dc8db3bfee2c9,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,09ee689a9abeb390,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,82ce67eff0dad8f0,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,60e96ffa25d1eece,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,7484adc5ee36ff13,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,7782d6a1c97a18d4,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,dd8a7bf210628fd7,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,1e3791a88b656c6a,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,7fc7957c278a66c0,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,7bdca6c47132bda1,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,46b1e160e19f7080,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,e53516fe572e80cc,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,1b8d52cb603f71ad,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,363fbcd9d3492c8f,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,b8d6dcbc1ee43a28,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,faec5f5baaf27846,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,94ead8b6d52b5942,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,1820959df8c1fe35,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,aba0f9495aacd498,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,c62d2fb45dceca49,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,9db652b99ba0d220,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,c4c2bb0181ff7fb9,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,be4a4a70aa7cc256,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,38b338a4660dfb4e,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,1936cb06da9b15cc,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
+added_replacement,0b05d537aac2b09a,,multiple_people,visually reviewed; exhaustive person count and explicit visible-face boxes agree
