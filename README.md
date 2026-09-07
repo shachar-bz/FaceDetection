@@ -302,6 +302,9 @@ folder in production runs code the study did not validate:
 python make_pipeline.py         # or: a, or b, for just one
 ```
 
+Regeneration is byte-for-byte reproducible, so that command doubles as the drift check: run it
+and if `git status` is clean, the committed folders match the library exactly.
+
 ### Or run it in place
 
 ```bash
