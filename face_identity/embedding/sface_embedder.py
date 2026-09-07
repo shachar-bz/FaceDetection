@@ -43,7 +43,8 @@ class SFaceEmbedder:
     def __init__(self, model_path: Path) -> None:
         if not Path(model_path).is_file():
             raise FileNotFoundError(
-                f"SFace model not found: {model_path}\nRun download_models.py first."
+                f"SFace model not found: {model_path}\n"
+                "Run: python -m face_identity.model_downloads"
             )
         self._recognizer = cv2.FaceRecognizerSF_create(str(model_path), "")
 
