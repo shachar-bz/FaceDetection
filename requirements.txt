@@ -1,11 +1,19 @@
-# Direct dependencies.
-mediapipe==1.0.1            # BlazeFace detectors, face_detection/ experiment only
-opencv-contrib-python==5.0.0.93  # image IO + SFace recognizer (needs the contrib build)
+# Every package this project uses, pinned. Mirrors the dependency lists in pyproject.toml;
+# `pip install -e ".[benchmark,test]"` installs the same set.
+
+# Direct dependencies of the face_identity library and the pipelines.
+insightface==1.0.1               # SCRFD detection + 5-point alignment + ResNet50@WebFace600K
+opencv-contrib-python==5.0.0.93  # image IO, annotation, and the SFace recognizer (contrib build)
 numpy==2.5.2
 pandas==3.0.5
-insightface==1.0.1          # SCRFD detection + buffalo_l / ResNet50@WebFace600K
 
 # Indirect: pulled in by insightface, pinned here so a resolver change can't
 # silently swap the ONNX runtime or the transform implementation underneath it.
 onnxruntime==1.29.0
 scikit-image==0.26.0
+
+# Used only by the detection benchmark in experiments/detection_benchmark/.
+mediapipe==1.0.1                 # BlazeFace short_range and full_range detectors
+
+# Used only by the test suite.
+pytest==8.4.2

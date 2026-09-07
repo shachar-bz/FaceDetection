@@ -6,7 +6,7 @@ This repository evaluates a pipeline that identifies people from a closed, prede
 
 The study has two stages. The first compares face detection models on how reliably they report whether faces are present in an image and how many. The second compares face embedding models, matching strategies, and decision thresholds on how accurately they name a person from the reference database.
 
-The final selected configuration is packaged as a standalone pipeline in [pipeline_A_resnet50_webface600k/](pipeline_A_resnet50_webface600k/). The runner-up configuration is packaged the same way in [pipeline_B_sface/](pipeline_B_sface/).
+Both stages, and the runnable pipeline they produced, share one library: [face_identity/](face_identity/). The winning configuration and the runner-up are two entries in [face_identity/configuration.py](face_identity/configuration.py) rather than two copies of the code, so the operating point the study selected is the operating point the pipeline runs. See [Using it](#using-it) to run it on your own images.
 
 ---
 
@@ -24,7 +24,7 @@ Determine which detector most reliably reports the number of faces present in an
 | BlazeFace `full_range` | MediaPipe Face Detector (`.tflite`) | Dense-anchor variant for smaller/farther faces | [MediaPipe Face Detector](https://ai.google.dev/edge/mediapipe/solutions/vision/face_detector) |
 | SCRFD-10G-KPS | InsightFace ONNX (`det_10g.onnx`, from the `buffalo_l` pack), 640×640 input | Also returns 5 facial keypoints, used later for alignment | [InsightFace](https://github.com/deepinsight/insightface) |
 
-All three ran at a confidence threshold of 0.5. Model download scripts are in [downloading_models_scripts/](downloading_models_scripts/).
+All three ran at a confidence threshold of 0.5. Every model is fetched by [face_identity/model_downloads.py](face_identity/model_downloads.py) into one shared cache.
 
 ### Test Cases
 
@@ -52,7 +52,7 @@ Ground truth is categorical: `0`, `1`, or `2+` faces. Each image was scored by t
 
 Allowing a single detection on a no-face image absorbs known MIAP labelling noise, where "person" boxes were drawn on statues, a helmet, and a light fixture.
 
-Accuracy, precision, and recall were computed overall and per group. See [face_detection/accuracy_report.py](face_detection/accuracy_report.py).
+Accuracy, precision, and recall were computed overall and per group. See [experiments/detection_benchmark/accuracy_report.py](experiments/detection_benchmark/accuracy_report.py).
 
 ### Results
 
@@ -72,7 +72,7 @@ Confusion counts:
 | BlazeFace `full_range` | 184 | 149 | 1 | 77 |
 | SCRFD-10G-KPS | 248 | 150 | 0 | 13 |
 
-A confidence sweep from 0.1 to 0.7 ([face_detection/threshold_sweep.py](face_detection/threshold_sweep.py)) showed `full_range` beating `short_range` at every threshold. Lowering BlazeFace's threshold to 0.3 roughly doubled recall but raised the false-positive rate on no-face images from 5.4% to ~25%.
+A confidence sweep from 0.1 to 0.7 ([experiments/detection_benchmark/threshold_sweep.py](experiments/detection_benchmark/threshold_sweep.py)) showed `full_range` beating `short_range` at every threshold. Lowering BlazeFace's threshold to 0.3 roughly doubled recall but raised the false-positive rate on no-face images from 5.4% to ~25%.
 
 ### Selected Detector
 
@@ -130,7 +130,7 @@ Detection runs **once per image**, via `FaceAnalysis.get()` (SCRFD-10GF + 5 keyp
 1. **ResNet50@WebFace600K** — alignment and recognition happen inside `FaceAnalysis.get()` itself.
 2. **SFace** — the same box, keypoints, and confidence are adapted into the 15-value row `cv2.FaceRecognizerSF.alignCrop()` expects, then passed through `alignCrop()` → `feature()`.
 
-No landmark reordering is needed: OpenCV's `alignCrop` warps to the same ArcFace reference points InsightFace uses. Detecting once guarantees both embeddings for a row always come from the same face. Both are L2-normalized before storage. See [face_embedding/build_face_database.py](face_embedding/build_face_database.py).
+No landmark reordering is needed: OpenCV's `alignCrop` warps to the same ArcFace reference points InsightFace uses. Detecting once guarantees both embeddings for a row always come from the same face. Both are L2-normalized before storage. See [experiments/identification_study/study_face_embedding.py](experiments/identification_study/study_face_embedding.py).
 
 ---
 
@@ -246,7 +246,7 @@ TOP3 is preferred over Centroid, which also reaches zero, because **each person 
 
 At 0.30 only 6 of the 571 faces are scored wrong — all 6 are known faces rejected as `unknown`, no distractor is ever named, and `wrong_identity` is 0. In 4 of the 6 rejections the top-ranked candidate was already the correct person, just below the threshold, so the failure mode is under-confidence rather than confusion. All 6 errors are in group photos.
 
-This configuration is packaged in [pipeline_A_resnet50_webface600k/](pipeline_A_resnet50_webface600k/), where the model, strategy, and threshold are all defined in [face_pipeline.py](pipeline_A_resnet50_webface600k/face_pipeline.py). [pipeline_B_sface/](pipeline_B_sface/) packages the SFace alternative (TOP2 at threshold 0.45) in the same shape, for comparison.
+This configuration is `PIPELINE_A_RESNET50_WEBFACE600K` in [face_identity/configuration.py](face_identity/configuration.py) — the single place the model, strategy and threshold are written down. `PIPELINE_B_SFACE` holds the SFace alternative (TOP2 at threshold 0.45) for comparison. Selecting one with `--pipeline a` or `--pipeline b` is the only difference between running them.
 
 ---
 
@@ -260,18 +260,80 @@ This configuration is packaged in [pipeline_A_resnet50_webface600k/](pipeline_A_
 
 ---
 
+## Using it
+
+```bash
+pip install -e .                                        # the library and the two CLIs
+python -m face_identity.model_downloads                 # weights into models/
+```
+
+Lay out photos of the people you want recognised, one folder per person, then build the
+database and identify a new image:
+
+```bash
+python build_face_database.py --people-images-root my_people
+python identify_faces.py photo.jpg --annotated-output labelled.jpg
+```
+
+Both commands default to pipeline A. Pass `--pipeline b` to either one to use SFace instead;
+each pipeline keeps its own database, and querying one pipeline's database with another is
+refused rather than silently producing nonsense.
+
+To hand the pipeline to someone outside this repository, generate a self-contained folder:
+
+```bash
+python -m tools.bundle_standalone_pipeline --pipelines a
+```
+
+The bundle in `dist/` carries its own copy of the library and defaults to that pipeline with
+no flag. It is generated, not hand-edited — regenerate it after changing the library so a
+handed-off copy can never drift from the code the study validated.
+
+### Reproducing the study
+
+Every experiment runs as a module from the repository root. See
+[experiments/detection_benchmark/](experiments/detection_benchmark/) and
+[experiments/identification_study/](experiments/identification_study/) for the full commands.
+
+```bash
+pip install -e ".[benchmark,test]"
+python -m pytest
+```
+
+### Configuring it
+
+Every threshold, model name and matching strategy lives in
+[face_identity/configuration.py](face_identity/configuration.py). Set `FACE_IDENTITY_MODELS_DIR`
+to keep model weights outside the repository.
+
+---
+
 ## Repository Layout
 
 | Path | Contents |
 |---|---|
+| [face_identity/](face_identity/) | The library: configuration, detectors, embedders, matching, model downloads |
+| [identify_faces.py](identify_faces.py), [build_face_database.py](build_face_database.py) | The pipeline CLIs, selected with `--pipeline a\|b` |
+| [experiments/detection_benchmark/](experiments/detection_benchmark/) | Stage 1: detector runners, accuracy report, threshold sweep, annotation |
+| [experiments/identification_study/](experiments/identification_study/) | Stage 2: reference and evaluation embeddings, the identification scorer |
+| [tools/](tools/) | Generates a self-contained pipeline folder for handoff |
+| [tests/](tests/) | Unit tests for the scoring, matching and metrics code |
 | [detecting_faces_data/](detecting_faces_data/) | 411-image detection dataset, manifest, and curation audit |
-| [face_detection/](face_detection/) | Detection runners, accuracy report, threshold sweep, annotation |
-| [face_embedding/](face_embedding/) | Builds the reference embedding database (both models) |
-| [face_identification/](face_identification/) | Evaluation-set embedding extraction and the identification scorer |
-| [downloading_models_scripts/](downloading_models_scripts/) | Model download scripts |
 | [results/](results/) | All experiment outputs, one folder per stage |
 | `results/blazeface/`, `results/scrfd/` | Detection results per model |
 | `results/embeddings/`, `results/eval_embeddings/` | Reference and evaluation embeddings with manifests (git-ignored — regenerate locally) |
 | [results/identification/](results/identification/) | Identification metrics and the full write-up |
-| [pipeline_A_resnet50_webface600k/](pipeline_A_resnet50_webface600k/) | The final selected configuration, packaged standalone |
-| [pipeline_B_sface/](pipeline_B_sface/) | The SFace alternative, packaged the same way |
+| `models/` | Shared model weights cache (git-ignored — re-downloadable) |
+
+### How the pieces depend on each other
+
+```
+face_identity/            the library: one implementation of detect -> embed -> score -> decide
+    ^            ^
+    |            |
+experiments/     identify_faces.py, build_face_database.py
+(the study)      (the deliverable)
+```
+
+Both sides import the library; the library imports neither. The configuration the study
+selects is the configuration the CLIs run, because it is the same object.
